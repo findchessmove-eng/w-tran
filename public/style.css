@@ -799,7 +799,8 @@ body {
 }
 
 .guess-input-container input:disabled,
-.guess-input-container input[readonly] {
+.guess-input-container input[readonly],
+.guess-input-container input.input-not-my-turn {
   opacity: 0.55;
   cursor: not-allowed;
   border-color: rgba(255, 255, 255, 0.1);

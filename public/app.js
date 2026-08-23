@@ -9,6 +9,7 @@ let isHost = false;
 let hasGuessedThisRound = false;
 let currentRoundTime = 40;
 let lastPlayersList = [];
+let blockInput = false;
 
 // DOM Elements: Navigation
 const screens = {
@@ -284,17 +285,30 @@ function handleGuessSubmit() {
   guessInput.value = '';
 }
 
-// Set Guess Input State helper for mobile/iPad soft keyboard preservation
-function setGuessInputEnabled(enabled, placeholder = "", isCorrect = false) {
-  if (enabled) {
+// Set Guess Input State helper for mobile/iPad/Android soft keyboard preservation
+function setGuessInputEnabled(enabled, placeholder = "", isCorrect = false, forceDisable = false) {
+  if (forceDisable) {
+    guessInput.disabled = true;
+    guessInput.readOnly = false;
+    blockInput = false;
+    guessInput.placeholder = placeholder || "Waiting...";
+    guessInput.classList.remove('input-correct');
+    guessInput.classList.remove('input-not-my-turn');
+    btnSubmitGuess.disabled = true;
+  } else {
     guessInput.disabled = false;
     guessInput.readOnly = false;
+    blockInput = !enabled;
     guessInput.placeholder = placeholder || "Type your English translation...";
-    guessInput.classList.remove('input-correct');
-  } else {
-    // Toggling readOnly instead of disabled keeps the keyboard open on iPad/iOS!
-    guessInput.readOnly = true;
-    guessInput.placeholder = placeholder || "Waiting...";
+    
+    if (blockInput) {
+      guessInput.classList.add('input-not-my-turn');
+      btnSubmitGuess.disabled = true;
+    } else {
+      guessInput.classList.remove('input-not-my-turn');
+      btnSubmitGuess.disabled = false;
+    }
+    
     if (isCorrect) {
       guessInput.classList.add('input-correct');
     } else {
@@ -302,6 +316,19 @@ function setGuessInputEnabled(enabled, placeholder = "", isCorrect = false) {
     }
   }
 }
+
+// Block typing when input is in soft-disabled state (keeps mobile keyboard open)
+guessInput.addEventListener('keydown', (e) => {
+  if (blockInput) {
+    e.preventDefault();
+  }
+});
+
+guessInput.addEventListener('input', (e) => {
+  if (blockInput) {
+    guessInput.value = '';
+  }
+});
 
 // Send Chat Message
 function handleChatSend(inputElement) {
@@ -437,16 +464,20 @@ gameChatInput.addEventListener('keypress', (e) => {
 });
 
 // Auto-focus guess input when clicking/tapping anywhere on the game board
-screens.game.addEventListener('click', (e) => {
+// Auto-focus guess input when clicking/tapping anywhere on the game board
+function handleScreenGameTap(e) {
   if (
     e.target.tagName !== 'BUTTON' && 
     e.target.tagName !== 'INPUT' && 
     e.target.tagName !== 'SELECT' && 
-    !hasGuessedThisRound
+    !blockInput &&
+    !guessInput.disabled
   ) {
     guessInput.focus();
   }
-});
+}
+screens.game.addEventListener('click', handleScreenGameTap);
+screens.game.addEventListener('touchend', handleScreenGameTap);
 
 // Game Over Screen
 btnBackHome.addEventListener('click', () => {
@@ -1017,22 +1048,4 @@ function getAvatarColor(username) {
   return colors[index];
 }
 
-// Auto-focus on tap of play area (helpful for iOS keyboard unlock)
-function triggerFocusInput(e) {
-  const welcomeScreen = document.getElementById('screen-welcome');
-  const lobbyScreen = document.getElementById('screen-lobby');
-  if (welcomeScreen.style.display !== 'none' || lobbyScreen.style.display !== 'none') {
-    return;
-  }
-  
-  if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
-    return;
-  }
-  
-  if (guessInput && !guessInput.disabled && !guessInput.readOnly) {
-    guessInput.focus();
-  }
-}
 
-document.addEventListener('click', triggerFocusInput);
-document.addEventListener('touchend', triggerFocusInput);
