@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shabd Anuvad - Multiplayer Word Translate Game</title>
+  <!-- Google Fonts: Outfit for premium modern feel, and Rozha One / Hind for Hindi script styling -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind:wght@500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-hindi">शब्द</span> <span class="logo-english">ANUVAD</span>
+      </div>
+      <div class="online-status">
+        <span class="status-dot"></span> Live Translation Battle
+      </div>
+    </header>
+
+    <main class="game-window">
+      <!-- 1. WELCOME/ENTRY SCREEN -->
+      <section id="screen-welcome" class="screen active">
+        <div class="card glass hero-card">
+          <h1>Hindi to English Word Race!</h1>
+          <p class="subtitle">Create a private room, invite friends, and translate Hindi words to English to win points.</p>
+          
+          <div class="form-group">
+            <label for="username-input">Enter Your Username</label>
+            <input type="text" id="username-input" placeholder="e.g. TranslatorPro" maxlength="15" autocomplete="off">
+          </div>
+
+          <div class="actions-row">
+            <button id="btn-create-room" class="btn btn-primary btn-glow">
+              <span class="btn-text">Create Room</span>
+              <span class="btn-icon">✨</span>
+            </button>
+            <button id="btn-show-join" class="btn btn-secondary">
+              <span class="btn-text">Join Room</span>
+              <span class="btn-icon">🔑</span>
+            </button>
+          </div>
+
+          <div id="join-form-container" class="join-slide-down">
+            <div class="form-group">
+              <label for="room-code-input">Enter Room Code</label>
+              <input type="text" id="room-code-input" placeholder="e.g. ABCD" maxlength="4" autocomplete="off" style="text-transform: uppercase;">
+            </div>
+            <button id="btn-join-room" class="btn btn-accent btn-block">Join Now</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. LOBBY SCREEN -->
+      <section id="screen-lobby" class="screen">
+        <div class="lobby-grid">
+          <!-- Room Info & Player List -->
+          <div class="card glass lobby-players-card">
+            <div class="lobby-header">
+              <div>
+                <h2>Game Lobby</h2>
+                <div class="room-badge" id="lobby-room-code-badge" title="Click to copy room code">
+                  ROOM: <span id="lobby-room-code">XXXX</span>
+                  <span class="copy-hint">(Click to Copy)</span>
+                </div>
+              </div>
+              <div class="player-count-indicator">
+                <span id="lobby-player-count">1</span> player(s)
+              </div>
+            </div>
+
+            <div class="players-list-wrapper">
+              <h3>Players Joined</h3>
+              <ul id="lobby-players-list" class="players-list">
+                <!-- Dynamically populated -->
+              </ul>
+            </div>
+
+            <!-- Host Settings Panel -->
+            <div id="host-settings" class="host-controls">
+              <h3>Host Settings</h3>
+              <div class="form-group row">
+                <label for="rounds-select">Total Rounds:</label>
+                <select id="rounds-select" class="select-styled">
+                  <option value="5">5 Rounds</option>
+                  <option value="10" selected>10 Rounds</option>
+                  <option value="15">15 Rounds</option>
+                  <option value="20">20 Rounds</option>
+                </select>
+              </div>
+              <div class="form-group row" style="margin-top: 10px;">
+                <label for="mode-select">Game Mode:</label>
+                <select id="mode-select" class="select-styled">
+                  <option value="classic" selected>Classic Race Mode</option>
+                  <option value="survival">Survival Mode (Turn by Turn)</option>
+                </select>
+              </div>
+              <div class="form-group row" style="margin-top: 10px;">
+                <label for="timer-select">Round Timer:</label>
+                <select id="timer-select" class="select-styled">
+                  <option value="20">20 Seconds</option>
+                  <option value="30">30 Seconds</option>
+                  <option value="40" selected>40 Seconds</option>
+                  <option value="60">60 Seconds</option>
+                </select>
+              </div>
+              <button id="btn-start-game" class="btn btn-primary btn-glow btn-block" style="margin-top: 15px;">Start Match 🚀</button>
+            </div>
+
+            <!-- Guest Message -->
+            <div id="guest-waiting-msg" class="guest-waiting">
+              <div class="spinner"></div>
+              <p>Waiting for the host to start the game...</p>
+            </div>
+          </div>
+
+          <!-- Lobby Chat Panel -->
+          <div class="card glass lobby-chat-card">
+            <h3>Room Chat</h3>
+            <div id="lobby-chat-box" class="chat-messages">
+              <!-- Dynamically populated -->
+            </div>
+            <div class="chat-input-row">
+              <input type="text" id="lobby-chat-input" placeholder="Type a message..." maxlength="100" autocomplete="off">
+              <button id="btn-lobby-send-chat" class="btn btn-accent">Send</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. GAMEPLAY SCREEN -->
+      <section id="screen-game" class="screen">
+        <!-- Round Progress & Timer Bar -->
+        <div class="game-progress-header">
+          <div class="round-indicator">
+            Round <span id="game-current-round">1</span> / <span id="game-total-rounds">10</span>
+          </div>
+          <div class="timer-container">
+            <div id="game-timer-bar" class="timer-bar" style="width: 100%;"></div>
+            <span id="game-timer-text" class="timer-text">40s</span>
+          </div>
+        </div>
+
+        <div class="game-grid">
+          <!-- Game Play Area -->
+          <div class="game-main-area">
+            <div class="card glass play-card">
+              <!-- Active turn banner for Turn-by-Turn mode -->
+              <div id="game-turn-banner" class="turn-banner" style="display: none;">
+                It's <span id="game-turn-player-name">Player</span>'s Turn!
+              </div>
+
+              <!-- JKLM Circular BombParty Playground (visible in survival mode) -->
+              <div id="bomb-playground" class="bomb-playground" style="display: none;">
+                <!-- Rotating Arrow Pointer -->
+                <div id="bomb-pointer-arrow" class="bomb-pointer-arrow">
+                  <div class="arrow-shaft"></div>
+                  <div class="arrow-head"></div>
+                </div>
+
+                <!-- Circular Bomb Body holding the Word -->
+                <div id="playground-bomb" class="word-prompt-container bomb-body-circle">
+                  <span class="bomb-spark">🔥</span>
+                  <span class="word-lang-label" style="font-size:0.6rem; opacity:0.6; margin-bottom: 2px;">HINDI WORD</span>
+                  <h2 id="prompt-hindi-word-survival" class="hindi-word">किताब</h2>
+                </div>
+
+                <!-- Ring of players (absolutely positioned dynamically) -->
+                <div id="bomb-players-ring" class="bomb-players-ring"></div>
+              </div>
+
+              <!-- Classic Mode word container (visible in classic mode) -->
+              <div id="game-classic-prompt" class="word-prompt-container">
+                <span class="bomb-spark">🔥</span>
+                <span class="word-lang-label">HINDI WORD</span>
+                <h2 id="prompt-hindi-word" class="hindi-word">किताब</h2>
+              </div>
+
+              <!-- English Word Hint Length & Letters -->
+              <div class="word-hint-container">
+                <span class="hint-label">ENGLISH TRANSLATION HINT</span>
+                <div id="word-hint-letters" class="hint-letters">_ _ _ _</div>
+                <div id="hint-alert-box" class="hint-alert">Waiting for translation...</div>
+              </div>
+
+              <!-- Input Area -->
+              <div class="guess-input-container">
+                <input type="text" id="guess-input" placeholder="Type your English translation here..." autocomplete="off" autofocus>
+                <button id="btn-submit-guess" class="btn btn-primary">Submit</button>
+              </div>
+              <div id="guess-feedback" class="guess-feedback"></div>
+            </div>
+
+            <!-- Gameplay Action Buttons -->
+            <div class="game-actions-bar">
+              <button id="btn-vote-show-answer" class="btn btn-warning">
+                Show Answer <span id="show-answer-votes-count">(0/0)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Players Scoreboard & Chat Panel -->
+          <div class="game-sidebar">
+            <!-- Scoreboard Card -->
+            <div class="card glass game-scores-card">
+              <h3>Scoreboard</h3>
+              <ul id="game-players-list" class="players-score-list">
+                <!-- Dynamically populated -->
+              </ul>
+            </div>
+
+            <!-- In-game Chat Card -->
+            <div class="card glass game-chat-card">
+              <h3>Live Chat</h3>
+              <div id="game-chat-box" class="chat-messages">
+                <!-- Dynamically populated -->
+              </div>
+              <div class="chat-input-row">
+                <input type="text" id="game-chat-input" placeholder="Type message..." maxlength="100" autocomplete="off">
+                <button id="btn-game-send-chat" class="btn btn-accent">Send</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. GAME OVER SCREEN -->
+      <section id="screen-gameover" class="screen">
+        <div class="card glass gameover-card">
+          <div class="winner-trophy">🏆</div>
+          <h1>Match Completed!</h1>
+          
+          <div class="winner-announcement" id="winner-announcement-text">
+            Congratulations to the Winner!
+          </div>
+
+          <div class="final-leaderboard-container">
+            <h3>Final Leaderboard</h3>
+            <ul id="final-players-list" class="final-scores-list">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+
+          <div class="actions-row centered">
+            <button id="btn-back-home" class="btn btn-primary btn-glow">Back to Home Screen</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Error/Alert Overlay popup -->
+    <div id="alert-popup" class="alert-overlay">
+      <div class="alert-box card glass">
+        <h3 id="alert-title">Alert</h3>
+        <p id="alert-message">Message text goes here.</p>
+        <button id="btn-close-alert" class="btn btn-accent">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.io library -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- Client side Javascript -->
+  <script src="/app.js"></script>
+</body>
+</html>
