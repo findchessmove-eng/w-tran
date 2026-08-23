@@ -34,6 +34,10 @@
   padding: 0;
 }
 
+html, body {
+  overscroll-behavior: none;
+}
+
 body {
   font-family: var(--font-main);
   background: var(--bg-gradient);
@@ -42,6 +46,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
+  touch-action: manipulation;
   display: flex;
   justify-content: center;
 }
