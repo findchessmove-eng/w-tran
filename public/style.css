@@ -793,6 +793,15 @@ body {
   box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
 }
 
+.guess-input-container input:disabled,
+.guess-input-container input[readonly] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+  background: rgba(0, 0, 0, 0.5);
+}
+
 .guess-input-container input.input-correct {
   border-color: var(--success);
   color: var(--success);

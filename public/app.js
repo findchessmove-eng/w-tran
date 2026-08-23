@@ -284,6 +284,25 @@ function handleGuessSubmit() {
   guessInput.value = '';
 }
 
+// Set Guess Input State helper for mobile/iPad soft keyboard preservation
+function setGuessInputEnabled(enabled, placeholder = "", isCorrect = false) {
+  if (enabled) {
+    guessInput.disabled = false;
+    guessInput.readOnly = false;
+    guessInput.placeholder = placeholder || "Type your English translation...";
+    guessInput.classList.remove('input-correct');
+  } else {
+    // Toggling readOnly instead of disabled keeps the keyboard open on iPad/iOS!
+    guessInput.readOnly = true;
+    guessInput.placeholder = placeholder || "Waiting...";
+    if (isCorrect) {
+      guessInput.classList.add('input-correct');
+    } else {
+      guessInput.classList.remove('input-correct');
+    }
+  }
+}
+
 // Send Chat Message
 function handleChatSend(inputElement) {
   const message = inputElement.value.trim();
@@ -620,18 +639,14 @@ socket.on('room_update', (data) => {
           turnBanner.innerHTML = `👉 IT IS YOUR TURN! Translate the word.`;
           
           if (me.hasGuessed) {
-            guessInput.disabled = true;
-            guessInput.classList.add('input-correct');
-            guessInput.placeholder = "Correct answer submitted!";
+            setGuessInputEnabled(false, "Correct answer submitted!", true);
             btnSubmitGuess.disabled = true;
           } else if (data.gameState === 'playing') {
             const isEliminated = me.lives <= 0;
-            guessInput.disabled = isEliminated;
-            guessInput.classList.remove('input-correct');
-            guessInput.placeholder = isEliminated ? "You are eliminated!" : "Type your English translation...";
+            setGuessInputEnabled(!isEliminated, isEliminated ? "You are eliminated!" : "Type your English translation...");
             btnSubmitGuess.disabled = isEliminated;
           } else {
-            guessInput.disabled = true;
+            setGuessInputEnabled(false, "Waiting...");
             btnSubmitGuess.disabled = true;
           }
         } else {
@@ -639,9 +654,7 @@ socket.on('room_update', (data) => {
           turnBanner.classList.remove('my-turn');
           turnBanner.innerHTML = `Waiting for <span style="font-weight:bold; color:var(--accent);">${activeName}</span>'s turn...`;
           
-          guessInput.disabled = true;
-          guessInput.classList.remove('input-correct');
-          guessInput.placeholder = `Waiting for ${activeName}...`;
+          setGuessInputEnabled(false, `Waiting for ${activeName}...`);
           btnSubmitGuess.disabled = true;
         }
       } else {
@@ -649,17 +662,13 @@ socket.on('room_update', (data) => {
         turnBanner.style.display = 'none';
         
         if (me.hasGuessed) {
-          guessInput.disabled = true;
-          guessInput.classList.add('input-correct');
-          guessInput.placeholder = "Answer guessed correctly!";
+          setGuessInputEnabled(false, "Answer guessed correctly!", true);
           btnSubmitGuess.disabled = true;
         } else if (data.gameState === 'playing') {
-          guessInput.disabled = false;
-          guessInput.classList.remove('input-correct');
-          guessInput.placeholder = "Type your English translation...";
+          setGuessInputEnabled(true, "Type your English translation...");
           btnSubmitGuess.disabled = false;
         } else {
-          guessInput.disabled = true;
+          setGuessInputEnabled(false, "Waiting...");
           btnSubmitGuess.disabled = true;
         }
       }
@@ -725,8 +734,7 @@ socket.on('round_started', (data) => {
       turnBanner.classList.add('my-turn');
       turnBanner.innerHTML = `👉 IT IS YOUR TURN! Translate the word.`;
       
-      guessInput.disabled = false;
-      guessInput.placeholder = "Type your English translation...";
+      setGuessInputEnabled(true, "Type your English translation...");
       btnSubmitGuess.disabled = false;
       
       // Focus guess input box immediately only if it is my turn
@@ -737,8 +745,7 @@ socket.on('round_started', (data) => {
       turnBanner.classList.remove('my-turn');
       turnBanner.innerHTML = `Waiting for active player's turn...`;
       
-      guessInput.disabled = true;
-      guessInput.placeholder = `Waiting for player's turn...`;
+      setGuessInputEnabled(false, `Waiting for player's turn...`);
       btnSubmitGuess.disabled = true;
     }
   } else {
@@ -754,8 +761,7 @@ socket.on('round_started', (data) => {
     promptHindiWord.textContent = data.hindiWord;
     
     turnBanner.style.display = 'none';
-    guessInput.disabled = false;
-    guessInput.placeholder = "Type your English translation...";
+    setGuessInputEnabled(true, "Type your English translation...");
     btnSubmitGuess.disabled = false;
     
     setTimeout(() => {
@@ -795,9 +801,7 @@ socket.on('hint_update', (data) => {
 socket.on('guess_result', (data) => {
   if (data.correct) {
     hasGuessedThisRound = true;
-    guessInput.disabled = true;
-    guessInput.classList.add('input-correct');
-    guessInput.classList.remove('input-incorrect');
+    setGuessInputEnabled(false, "Correct!", true);
     btnSubmitGuess.disabled = true;
     
     guessFeedback.textContent = "Correct!";
@@ -822,7 +826,7 @@ socket.on('guess_result', (data) => {
 // 8. Round Over Summary
 socket.on('round_ended', (data) => {
   // Disable everything
-  guessInput.disabled = true;
+  setGuessInputEnabled(false, "Round over...");
   btnSubmitGuess.disabled = true;
 
   // Trigger explosion graphics and sound if flagged
@@ -1012,3 +1016,20 @@ function getAvatarColor(username) {
   const index = Math.abs(hash % colors.length);
   return colors[index];
 }
+
+// Auto-focus on tap of play area (helpful for iOS keyboard unlock)
+document.addEventListener('click', (e) => {
+  const welcomeScreen = document.getElementById('screen-welcome');
+  const lobbyScreen = document.getElementById('screen-lobby');
+  if (welcomeScreen.style.display !== 'none' || lobbyScreen.style.display !== 'none') {
+    return;
+  }
+  
+  if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+    return;
+  }
+  
+  if (guessInput && !guessInput.disabled && !guessInput.readOnly) {
+    guessInput.focus();
+  }
+});
