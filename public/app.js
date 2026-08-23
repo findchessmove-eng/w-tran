@@ -330,6 +330,56 @@ guessInput.addEventListener('input', (e) => {
   }
 });
 
+// Full-screen overlay to unlock soft keyboard on mobile devices for guest players
+function showMobileStartOverlay() {
+  if (document.getElementById('mobile-start-overlay')) return;
+  
+  const overlay = document.createElement('div');
+  overlay.id = 'mobile-start-overlay';
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.background = 'rgba(10, 10, 15, 0.95)';
+  overlay.style.display = 'flex';
+  overlay.style.flexDirection = 'column';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.zIndex = '99999';
+  overlay.style.backdropFilter = 'blur(15px)';
+  overlay.style.padding = '30px';
+  overlay.style.textAlign = 'center';
+  
+  overlay.innerHTML = `
+    <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; color: #fff; margin-bottom: 15px; text-shadow: 0 0 10px rgba(255,255,255,0.3);">
+      Match is Starting! 🚀
+    </h2>
+    <p style="font-family: var(--font-main); font-size: 1.1rem; color: rgba(255,255,255,0.7); margin-bottom: 30px; max-width: 320px;">
+      Tap the button below to join the arena and unlock your keyboard.
+    </p>
+    <button id="btn-mobile-unlock" class="btn btn-primary btn-glow" style="padding: 16px 32px; font-size: 1.2rem; border-radius: 12px; width: 100%; max-width: 280px; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);">
+      ENTER ARENA ⚔️
+    </button>
+  `;
+  
+  document.body.appendChild(overlay);
+  
+  const unlockBtn = document.getElementById('btn-mobile-unlock');
+  const triggerUnlock = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    document.body.removeChild(overlay);
+    
+    setTimeout(() => {
+      guessInput.focus();
+    }, 20);
+  };
+  
+  unlockBtn.addEventListener('click', triggerUnlock);
+  unlockBtn.addEventListener('touchend', triggerUnlock);
+}
+
 // Send Chat Message
 function handleChatSend(inputElement) {
   const message = inputElement.value.trim();
@@ -441,6 +491,12 @@ btnStartGame.addEventListener('click', () => {
     gameMode: gameMode,
     roundTime: roundTime
   });
+  
+  // Pre-focus guess input immediately on host click gesture to open soft keyboard
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) {
+    guessInput.focus();
+  }
 });
 
 btnLobbySendChat.addEventListener('click', () => handleChatSend(lobbyChatInput));
@@ -712,6 +768,12 @@ socket.on('game_started', () => {
   showScreen('game');
   guessFeedback.textContent = '';
   guessFeedback.className = 'guess-feedback';
+  
+  // Mobile soft-keyboard auto-unlock overlay for guest players
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile && !isHost) {
+    showMobileStartOverlay();
+  }
 });
 
 // 4. Start of a new game round

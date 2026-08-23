@@ -4,6 +4,16 @@ const { Server } = require('socket.io');
 const path = require('path');
 const words = require('./words');
 
+// Fisher-Yates array shuffling algorithm for unbiased randomization
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
@@ -186,8 +196,30 @@ function endRound(roomCode, consensusReached = false) {
       }
     }
 
+    if (room.gameMode === 'survival') {
+      const activePlayers = Object.values(room.players).filter(p => p.lives > 0);
+      const totalPlayers = Object.keys(room.players).length;
+      const isGameOver = (totalPlayers > 1) ? (activePlayers.length <= 1) : (activePlayers.length === 0);
+      
+      if (isGameOver) {
+        room.gameState = 'game_over';
+        const finalScores = Object.values(room.players).map(p => ({
+          username: p.username,
+          score: p.score
+        })).sort((a, b) => b.score - a.score);
+
+        const winnerMsg = activePlayers.length === 1 ? `Winner is ${activePlayers[0].username}! 🏆` : "Game Over!";
+        io.to(roomCode).emit('game_over', { finalScores, message: winnerMsg });
+        broadcastRoomUpdate(roomCode);
+        return;
+      }
+      
+      startNextRound(roomCode);
+      return;
+    }
+
     if (room.round >= room.totalRounds) {
-      // Game Over
+      // Game Over (Classic Mode)
       room.gameState = 'game_over';
       const finalScores = Object.values(room.players).map(p => ({
         username: p.username,
@@ -197,7 +229,7 @@ function endRound(roomCode, consensusReached = false) {
       io.to(roomCode).emit('game_over', { finalScores });
       broadcastRoomUpdate(roomCode);
     } else {
-      // Start next round
+      // Start next round (Classic Mode)
       startNextRound(roomCode);
     }
   }, transitionDelay);
@@ -433,9 +465,13 @@ io.on('connection', (socket) => {
     // Select words pool
     const wordsPool = [...words];
 
-    // Shuffle and select from filtered pool
-    const shuffledWords = wordsPool.sort(() => 0.5 - Math.random());
-    room.roundWords = shuffledWords.slice(0, room.totalRounds);
+    // Shuffle and select
+    const shuffledWords = shuffleArray(wordsPool);
+    if (room.gameMode === 'survival') {
+      room.roundWords = shuffledWords; // Keep all words to prevent repeats in survival
+    } else {
+      room.roundWords = shuffledWords.slice(0, room.totalRounds);
+    }
 
     // Turn by Turn survival setup
     if (room.gameMode === 'survival') {
