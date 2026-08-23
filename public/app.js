@@ -1018,7 +1018,7 @@ function getAvatarColor(username) {
 }
 
 // Auto-focus on tap of play area (helpful for iOS keyboard unlock)
-document.addEventListener('click', (e) => {
+function triggerFocusInput(e) {
   const welcomeScreen = document.getElementById('screen-welcome');
   const lobbyScreen = document.getElementById('screen-lobby');
   if (welcomeScreen.style.display !== 'none' || lobbyScreen.style.display !== 'none') {
@@ -1032,4 +1032,7 @@ document.addEventListener('click', (e) => {
   if (guessInput && !guessInput.disabled && !guessInput.readOnly) {
     guessInput.focus();
   }
-});
+}
+
+document.addEventListener('click', triggerFocusInput);
+document.addEventListener('touchend', triggerFocusInput);
