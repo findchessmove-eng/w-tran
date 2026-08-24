@@ -1543,6 +1543,12 @@ function renderBingoPlayGrid(myBoard, calledList) {
     const cell = gridEl.children[i];
     const num = myBoard[i] || '';
     
+    // Crucial: Update text content and dataset number dynamically for new tournament rounds
+    if (cell.textContent !== String(num)) {
+      cell.textContent = num;
+    }
+    cell.dataset.number = num;
+    
     const isCalled = calledList.includes(num);
     const isLineCompleted = completedCells.includes(i);
 
