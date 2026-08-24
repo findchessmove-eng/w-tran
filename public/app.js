@@ -18,6 +18,7 @@ let myBingoBoard = [];
 let calledNumbers = [];
 let currentTurnPlayerId = null;
 let previousLinesCount = 0;
+let randomizeInterval = null;
 
 // Game Type selection handler (called from Welcome Screen)
 window.selectGameType = function(type) {
@@ -1211,7 +1212,7 @@ socket.on('game_over', (data) => {
   if (selectedGameType === 'bingo') {
     if (data.finalScores.length > 0) {
       const winner = data.finalScores[0];
-      announcementHtml += `🏆 ${winner.username} completed 5 lines!`;
+      announcementHtml += `🏆 ${winner.username} won the match!`;
     } else {
       announcementHtml += "No players in the game.";
     }
@@ -1229,7 +1230,7 @@ socket.on('game_over', (data) => {
   finalPlayersList.innerHTML = '';
   data.finalScores.forEach((p, idx) => {
     const li = document.createElement('li');
-    const unitText = selectedGameType === 'bingo' ? 'Lines' : 'Correct';
+    const unitText = selectedGameType === 'bingo' ? 'Match Wins' : 'Correct';
     li.innerHTML = `
       <div>
         <span class="rank-badge">${idx + 1}</span>
@@ -1579,22 +1580,87 @@ const btnBingoClear = document.getElementById('btn-bingo-clear');
 
 if (btnBingoRandom) {
   btnBingoRandom.addEventListener('click', () => {
+    // Clear any active randomize animation
+    if (randomizeInterval) clearInterval(randomizeInterval);
+    
+    // Disable control buttons during fill
+    btnBingoRandom.disabled = true;
+    if (btnBingoClear) btnBingoClear.disabled = true;
+
+    // Prepare numbers 1 to 25 and shuffle them
     const numbers = Array.from({ length: 25 }, (_, i) => i + 1);
-    // Shuffle
     for (let i = numbers.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
     }
-    bingoSetupBoard = numbers;
-    bingoNextNumber = 26;
+
+    // Clear board first to start fresh
+    bingoSetupBoard = Array(25).fill(null);
+    bingoNextNumber = 1;
     renderBingoSetupGrid();
     updateSetupStatus();
-    playSuccessSound();
+
+    // Create a random order of cell indices (0 to 24) to fill staggered
+    const cellIndices = Array.from({ length: 25 }, (_, i) => i);
+    for (let i = cellIndices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cellIndices[i], cellIndices[j]] = [cellIndices[j], cellIndices[i]];
+    }
+
+    let step = 0;
+    randomizeInterval = setInterval(() => {
+      if (step >= 25) {
+        clearInterval(randomizeInterval);
+        randomizeInterval = null;
+        
+        // Re-enable control buttons
+        btnBingoRandom.disabled = false;
+        if (btnBingoClear) btnBingoClear.disabled = false;
+        
+        // Final success sound and auto-ready trigger
+        bingoNextNumber = 26;
+        renderBingoSetupGrid();
+        updateSetupStatus();
+        playSuccessSound();
+        return;
+      }
+
+      const cellIdx = cellIndices[step];
+      const num = numbers[step];
+      bingoSetupBoard[cellIdx] = num;
+      renderBingoSetupGrid();
+
+      // Play snappy ascending synthesizer note on each cell fill
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        const freq = 320 + step * 16; // ascending frequency
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+      } catch (e) {}
+
+      step++;
+    }, 45); // ~1.1s total duration
   });
 }
 
 if (btnBingoClear) {
   btnBingoClear.addEventListener('click', () => {
+    // Stop any active randomize animation
+    if (randomizeInterval) {
+      clearInterval(randomizeInterval);
+      randomizeInterval = null;
+    }
+    if (btnBingoRandom) btnBingoRandom.disabled = false;
+    btnBingoClear.disabled = false;
+
     bingoSetupBoard = Array(25).fill(null);
     bingoNextNumber = 1;
     renderBingoSetupGrid();
@@ -1620,6 +1686,10 @@ if (btnBingoSendChat && bingoChatInput) {
 
 socket.on('bingo_start_placement', () => {
   closeAlert(); // Close any active popups/toasts
+  if (randomizeInterval) {
+    clearInterval(randomizeInterval);
+    randomizeInterval = null;
+  }
   bingoSetupBoard = Array(25).fill(null);
   bingoNextNumber = 1;
   
