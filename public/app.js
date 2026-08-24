@@ -1371,50 +1371,76 @@ function getAvatarColor(username) {
 function renderBingoSetupGrid() {
   const gridEl = document.getElementById('bingo-setup-grid');
   if (!gridEl) return;
-  gridEl.innerHTML = '';
   
-  for (let i = 0; i < 25; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'bingo-cell';
-    cell.dataset.index = i;
+  // Create cells once if not already initialized
+  if (gridEl.children.length !== 25) {
+    gridEl.innerHTML = '';
     
-    const value = bingoSetupBoard[i];
-    if (value !== null) {
-      cell.textContent = value;
-      cell.classList.add('placed');
-    } else {
-      cell.textContent = '';
-      cell.classList.remove('placed');
-    }
-    
-    cell.addEventListener('click', () => {
-      // If cell is already placed, ignore click
-      if (bingoSetupBoard[i] !== null) return;
-      
-      if (bingoNextNumber <= 25) {
-        bingoSetupBoard[i] = bingoNextNumber;
-        bingoNextNumber++;
-        renderBingoSetupGrid();
-        updateSetupStatus();
+    // Bind click listener on parent container via event delegation once
+    if (!gridEl.dataset.hasListener) {
+      gridEl.dataset.hasListener = 'true';
+      gridEl.addEventListener('click', (e) => {
+        const cell = e.target.closest('.bingo-cell');
+        if (!cell) return;
         
-        // Play simple click note
-        try {
-          const ctx = getAudioContext();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(261.63 * Math.pow(1.059463, bingoNextNumber - 2), ctx.currentTime);
-          gain.gain.setValueAtTime(0.05, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.1);
-        } catch (e) {}
-      }
-    });
+        const idx = parseInt(cell.dataset.index);
+        if (isNaN(idx)) return;
+        
+        // If cell is already placed, ignore click
+        if (bingoSetupBoard[idx] !== null) return;
+        
+        if (bingoNextNumber <= 25) {
+          bingoSetupBoard[idx] = bingoNextNumber;
+          bingoNextNumber++;
+          renderBingoSetupGrid();
+          updateSetupStatus();
+          
+          // Play simple click note
+          try {
+            const ctx = getAudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(261.63 * Math.pow(1.059463, bingoNextNumber - 2), ctx.currentTime);
+            gain.gain.setValueAtTime(0.05, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.1);
+          } catch (err) {}
+        }
+      });
+    }
+
+    for (let i = 0; i < 25; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'bingo-cell';
+      cell.dataset.index = i;
+      gridEl.appendChild(cell);
+    }
+  }
+
+  // Update existing cells in-place
+  for (let i = 0; i < 25; i++) {
+    const cell = gridEl.children[i];
+    const value = bingoSetupBoard[i];
     
-    gridEl.appendChild(cell);
+    if (value !== null) {
+      if (cell.textContent !== String(value)) {
+        cell.textContent = value;
+      }
+      if (!cell.classList.contains('placed')) {
+        cell.classList.add('placed');
+      }
+    } else {
+      if (cell.textContent !== '') {
+        cell.textContent = '';
+      }
+      if (cell.classList.contains('placed')) {
+        cell.classList.remove('placed');
+      }
+    }
   }
 }
 
@@ -1475,37 +1501,69 @@ function getCompletedCellIndices(board, calledList) {
 function renderBingoPlayGrid(myBoard, calledList) {
   const gridEl = document.getElementById('bingo-game-grid');
   if (!gridEl) return;
-  gridEl.innerHTML = '';
 
   const isMyTurn = currentTurnPlayerId === socket.id;
   const completedCells = getCompletedCellIndices(myBoard, calledList);
 
-  for (let i = 0; i < 25; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'bingo-cell play-mode';
-    const num = myBoard[i] || '';
-    cell.textContent = num;
+  // Create play cells once if not already initialized
+  if (gridEl.children.length !== 25) {
+    gridEl.innerHTML = '';
+    
+    // Bind click listener on parent container via event delegation once
+    if (!gridEl.dataset.hasListener) {
+      gridEl.dataset.hasListener = 'true';
+      gridEl.addEventListener('click', (e) => {
+        const cell = e.target.closest('.bingo-cell');
+        if (!cell) return;
+        
+        if (cell.classList.contains('clickable') && currentTurnPlayerId === socket.id) {
+          const num = parseInt(cell.dataset.number);
+          if (num) {
+            socket.emit('call_bingo_number', {
+              code: currentRoomCode,
+              number: num
+            });
+          }
+        }
+      });
+    }
 
+    for (let i = 0; i < 25; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'bingo-cell play-mode';
+      const num = myBoard[i] || '';
+      cell.textContent = num;
+      cell.dataset.number = num;
+      gridEl.appendChild(cell);
+    }
+  }
+
+  // Update existing cells in-place smoothly without destroying elements
+  for (let i = 0; i < 25; i++) {
+    const cell = gridEl.children[i];
+    const num = myBoard[i] || '';
+    
     const isCalled = calledList.includes(num);
     const isLineCompleted = completedCells.includes(i);
 
     if (isLineCompleted) {
-      cell.classList.add('called', 'line-completed');
+      if (!cell.classList.contains('line-completed')) {
+        cell.className = 'bingo-cell play-mode called line-completed';
+      }
     } else if (isCalled) {
-      cell.classList.add('called');
+      if (!cell.classList.contains('called')) {
+        cell.className = 'bingo-cell play-mode called';
+      }
     } else {
+      // Cell is active (uncalled)
+      let className = 'bingo-cell play-mode';
       if (isMyTurn && num !== '') {
-        cell.classList.add('clickable');
-        cell.addEventListener('click', () => {
-          socket.emit('call_bingo_number', {
-            code: currentRoomCode,
-            number: num
-          });
-        });
+        className += ' clickable';
+      }
+      if (cell.className !== className) {
+        cell.className = className;
       }
     }
-
-    gridEl.appendChild(cell);
   }
 }
 
