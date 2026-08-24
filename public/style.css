@@ -1889,8 +1889,54 @@ body {
 
 /* Global body active turn soft red theme transition */
 body.bingo-my-turn-active {
-  background: radial-gradient(circle at top, #ffffff 0%, #ffe4e6 100%) !important;
-  background-color: #ffe4e6 !important;
+  background: radial-gradient(circle at top, #ffffff 0%, #fee2e2 100%) !important;
+  background-color: #fee2e2 !important;
+}
+
+/* Play Card Dark Red Theme when it is my turn (Works perfectly on mobile/tablets!) */
+.bingo-my-turn-active .play-card {
+  background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%) !important;
+  border-color: #ef4444 !important;
+  box-shadow: 0 10px 30px rgba(185, 28, 28, 0.25) !important;
+  color: #ffffff !important;
+}
+
+.bingo-my-turn-active .play-card h2,
+.bingo-my-turn-active .play-card h3,
+.bingo-my-turn-active .play-card p,
+.bingo-my-turn-active .play-card .subtitle,
+.bingo-my-turn-active .play-card .bingo-my-lines,
+.bingo-my-turn-active .play-card #bingo-my-lines {
+  color: #ffffff !important;
+}
+
+/* Turn unlit header letters translucent white */
+.bingo-my-turn-active .play-card .bingo-letter {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Glowing amber lit header letters */
+.bingo-my-turn-active .play-card .bingo-letter.lit {
+  background: #f59e0b !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.8) !important;
+  text-shadow: 0 0 8px #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+/* Snappy white keys for active uncalled cells */
+.bingo-my-turn-active .play-card .bingo-cell:not(.called) {
+  background: #ffffff !important;
+  color: #7f1d1d !important;
+  border-color: #fca5a5 !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+}
+
+.bingo-my-turn-active .play-card .bingo-cell.clickable:hover {
+  background: #fef2f2 !important;
+  transform: scale(1.05);
 }
 
 /* Score scoreboard layout for Bingo letters */
