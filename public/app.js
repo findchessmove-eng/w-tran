@@ -179,6 +179,42 @@ function playLineCompleteSound() {
   }
 }
 
+// Play a low-pitched sawtooth explosion rumble for Bomb cell detonations
+function playExplosionSound() {
+  try {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(30, now + 0.55);
+    
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.linearRampToValueAtTime(0.001, now + 0.55);
+    
+    const bassOsc = ctx.createOscillator();
+    const bassGain = ctx.createGain();
+    bassOsc.type = 'sine';
+    bassOsc.frequency.setValueAtTime(80, now);
+    bassOsc.frequency.exponentialRampToValueAtTime(20, now + 0.7);
+    bassGain.gain.setValueAtTime(0.3, now);
+    bassGain.gain.linearRampToValueAtTime(0.001, now + 0.7);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    bassOsc.connect(bassGain);
+    bassGain.connect(ctx.destination);
+    
+    osc.start(now);
+    osc.stop(now + 0.55);
+    bassOsc.start(now);
+    bassOsc.stop(now + 0.7);
+  } catch (e) {}
+}
+
 // Play a low-pitched sawtooth buzz for an incorrect guess
 function playErrorSound() {
   try {
@@ -541,10 +577,12 @@ btnStartGame.addEventListener('click', () => {
   if (selectedGameType === 'bingo') {
     const turnTimer = document.getElementById('bingo-timer-select').value;
     const matchRounds = document.getElementById('bingo-rounds-select').value;
+    const mode = document.getElementById('bingo-mode-select').value;
     socket.emit('start_game', {
       code: currentRoomCode,
       bingoTurnTimer: turnTimer,
-      bingoMatchRounds: matchRounds
+      bingoMatchRounds: matchRounds,
+      bingoMode: mode
     });
     return;
   }
@@ -752,14 +790,21 @@ socket.on('room_update', (data) => {
       const isMyTurn = data.currentTurnPlayerId === socket.id;
       const turnBanner = document.getElementById('bingo-turn-banner');
       
-      if (isMyTurn) {
-        turnBanner.textContent = `⭐ It's Your Turn! Call a number.`;
-        turnBanner.classList.add('your-turn');
-        document.body.classList.add('bingo-my-turn-active');
-      } else {
-        turnBanner.textContent = `It's ${activeName}'s Turn.`;
-        turnBanner.classList.remove('your-turn');
+      if (data.bingoMode === 'real_life') {
+        turnBanner.textContent = `🎙️ Auto-Caller is drawing numbers...`;
+        turnBanner.className = 'turn-banner auto-caller-active';
         document.body.classList.remove('bingo-my-turn-active');
+      } else {
+        turnBanner.classList.remove('auto-caller-active');
+        if (isMyTurn) {
+          turnBanner.textContent = `⭐ It's Your Turn! Call a number.`;
+          turnBanner.className = 'turn-banner your-turn';
+          document.body.classList.add('bingo-my-turn-active');
+        } else {
+          turnBanner.textContent = `It's ${activeName}'s Turn.`;
+          turnBanner.className = 'turn-banner';
+          document.body.classList.remove('bingo-my-turn-active');
+        }
       }
 
       // Draw scoreboard
@@ -1764,6 +1809,28 @@ socket.on('bingo_round_ended', ({ winnerNames, round, totalRounds }) => {
     'Round Ended 🏁', 
     `${winnerNames} won Round ${round}! Match length: Best of ${totalRounds}.\n\nPreparing next board in 5 seconds...`
   );
+});
+
+socket.on('bingo_bomb_detonated', ({ bombNumber, freeStrikeNumber }) => {
+  // Trigger screen flash animation
+  document.body.classList.add('flash-red-active');
+  setTimeout(() => {
+    document.body.classList.remove('flash-red-active');
+  }, 450);
+
+  // Play explosion sound
+  playExplosionSound();
+
+  // Show details in system warning popup
+  showAlert(
+    '💥 BOMB DETONATED! 💣',
+    `Called number ${bombNumber} was a hidden bomb!\n\nThis triggered a free strike on number ${freeStrikeNumber} for all players!`
+  );
+  
+  // Auto close the notification after 3 seconds to keep action fast
+  setTimeout(() => {
+    closeAlert();
+  }, 3000);
 });
 
 

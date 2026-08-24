@@ -178,6 +178,65 @@ function autoCallBingoNumber(roomCode) {
   processCalledNumber(roomCode, selectedNumber);
 }
 
+// Start the automatic number caller interval for Real Life Mode
+function startBingoAutoCaller(roomCode) {
+  const room = rooms[roomCode];
+  if (!room || room.gameType !== 'bingo' || room.gameState !== 'playing') return;
+
+  if (room.timer) {
+    clearInterval(room.timer);
+    room.timer = null;
+  }
+
+  // Draw first number after a short delay (e.g. 2.2 seconds) so players can prepare
+  setTimeout(() => {
+    const r = rooms[roomCode];
+    if (!r || r.gameState !== 'playing' || r.bingoMode !== 'real_life') return;
+    
+    const uncalled = Array.from({ length: 25 }, (_, i) => i + 1)
+      .filter(n => !r.calledNumbers.includes(n));
+    if (uncalled.length > 0) {
+      const firstNum = uncalled[Math.floor(Math.random() * uncalled.length)];
+      io.to(roomCode).emit('chat_message', {
+        sender: 'Caller 🎙️',
+        message: `📢 First number is ${firstNum}!`,
+        system: true
+      });
+      processCalledNumber(roomCode, firstNum);
+    }
+  }, 2200);
+
+  // Then start recurring draw interval
+  room.timer = setInterval(() => {
+    const r = rooms[roomCode];
+    if (!r || r.gameState !== 'playing' || r.bingoMode !== 'real_life') {
+      if (r && r.timer) {
+        clearInterval(r.timer);
+        r.timer = null;
+      }
+      return;
+    }
+
+    const uncalled = Array.from({ length: 25 }, (_, i) => i + 1)
+      .filter(n => !r.calledNumbers.includes(n));
+
+    if (uncalled.length === 0) {
+      clearInterval(room.timer);
+      room.timer = null;
+      return;
+    }
+
+    const nextNum = uncalled[Math.floor(Math.random() * uncalled.length)];
+    io.to(roomCode).emit('chat_message', {
+      sender: 'Caller 🎙️',
+      message: `📢 Next number: ${nextNum}!`,
+      system: true
+    });
+    processCalledNumber(roomCode, nextNum);
+  }, 4500); // draw every 4.5 seconds
+}
+
+
 // Function to send updated room state to all clients in the room
 function broadcastRoomUpdate(roomCode) {
   const room = rooms[roomCode];
@@ -240,13 +299,50 @@ function processCalledNumber(roomCode, number) {
   const room = rooms[roomCode];
   if (!room) return;
 
-  // Add to called numbers
-  room.calledNumbers.push(number);
-
   // Stop current turn timer
   if (room.timer) {
     clearInterval(room.timer);
     room.timer = null;
+  }
+
+  // Process called numbers queue (allowing chain bomb explosions)
+  let numbersToProcess = [number];
+  let bombHitOccurred = false;
+
+  while (numbersToProcess.length > 0) {
+    const num = numbersToProcess.shift();
+    if (!room.calledNumbers.includes(num)) {
+      room.calledNumbers.push(num);
+    }
+    
+    // Check if Chaos Mode is active and this number is a hidden bomb!
+    if (room.bingoMode === 'chaos' && room.bombNumbers && room.bombNumbers.includes(num)) {
+      bombHitOccurred = true;
+      // Find remaining uncalled numbers (not in calledNumbers and not already queued in numbersToProcess)
+      const uncalled = Array.from({ length: 25 }, (_, i) => i + 1)
+        .filter(n => !room.calledNumbers.includes(n) && !numbersToProcess.includes(n));
+      
+      if (uncalled.length > 0) {
+        const freeStrike = uncalled[Math.floor(Math.random() * uncalled.length)];
+        numbersToProcess.push(freeStrike);
+        
+        // Emit bomb detonation event so clients play explosion sound and flash
+        io.to(roomCode).emit('bingo_bomb_detonated', { bombNumber: num, freeStrikeNumber: freeStrike });
+        io.to(roomCode).emit('chat_message', {
+          sender: 'System',
+          message: `💥 BOMB DETONATED! Number ${num} exploded, also crossing off ${freeStrike} on all boards!`,
+          system: true
+        });
+      }
+    }
+  }
+
+  if (!bombHitOccurred) {
+    // Notify clients about the standard called number and completed lines updates
+    io.to(roomCode).emit('bingo_number_called', {
+      number: number,
+      calledNumbers: room.calledNumbers
+    });
   }
 
   // Recalculate completed lines for all players
@@ -258,12 +354,6 @@ function processCalledNumber(roomCode, number) {
     if (p.completedLines >= 5) {
       winners.push(p);
     }
-  });
-
-  // Notify clients about the called number and completed lines updates
-  io.to(roomCode).emit('bingo_number_called', {
-    number: number,
-    calledNumbers: room.calledNumbers
   });
 
   if (winners.length > 0) {
@@ -308,6 +398,20 @@ function processCalledNumber(roomCode, number) {
       setTimeout(() => {
         if (!rooms[roomCode]) return;
         room.gameState = 'placement';
+        
+        // Generate new bomb numbers for the new round
+        if (room.bingoMode === 'chaos') {
+          const pool = Array.from({ length: 25 }, (_, i) => i + 1);
+          for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+          }
+          room.bombNumbers = pool.slice(0, 3);
+        }
+        if (room.bingoMode === 'duocall') {
+          room.duoCallCount = 0;
+        }
+
         Object.values(room.players).forEach(p => {
           p.isReady = false;
           p.bingoBoard = null;
@@ -321,6 +425,19 @@ function processCalledNumber(roomCode, number) {
       broadcastRoomUpdate(roomCode);
       return;
     }
+  }
+
+  // Handle turn rotation based on Game Mode
+  if (room.bingoMode === 'duocall') {
+    room.duoCallCount = (room.duoCallCount || 0) + 1;
+    if (room.duoCallCount < 2) {
+      // Keep turn on the same active player for their second call
+      startBingoTurnTimer(roomCode);
+      broadcastRoomUpdate(roomCode);
+      return;
+    }
+    // Turn completed after 2 calls, reset counter
+    room.duoCallCount = 0;
   }
 
   // Rotate turn to next player
@@ -686,7 +803,25 @@ io.on('connection', (socket) => {
       const bRounds = parseInt(data.bingoMatchRounds) || 5;
       room.totalRounds = Math.min(Math.max(bRounds, 3), 21); // enforce min 3, max 21 rounds for bingo
       room.round = 1;
+      room.bingoMode = data.bingoMode || 'classic';
       room.gameState = 'placement';
+
+      // Pick Hidden Bomb numbers if Chaos mode is active
+      if (room.bingoMode === 'chaos') {
+        const pool = Array.from({ length: 25 }, (_, i) => i + 1);
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        room.bombNumbers = pool.slice(0, 3);
+        console.log(`[Chaos Mode] Shuffled bomb numbers: ${room.bombNumbers}`);
+      } else {
+        room.bombNumbers = [];
+      }
+
+      if (room.bingoMode === 'duocall') {
+        room.duoCallCount = 0;
+      }
       
       // Reset players states for Bingo Board Placement phase
       Object.values(room.players).forEach(p => {
@@ -772,21 +907,41 @@ io.on('connection', (socket) => {
     if (allPlayersReady) {
       room.gameState = 'playing';
       room.calledNumbers = [];
-      room.turnOrder = Object.keys(room.players).sort(() => 0.5 - Math.random());
-      room.turnIndex = 0;
-      room.currentTurnPlayerId = room.turnOrder[0];
+      
+      if (room.bingoMode === 'real_life') {
+        room.currentTurnPlayerId = null;
+        
+        io.to(roomCode).emit('bingo_game_started', {
+          currentTurnPlayerId: null
+        });
 
-      io.to(roomCode).emit('bingo_game_started', {
-        currentTurnPlayerId: room.currentTurnPlayerId
-      });
+        io.to(roomCode).emit('chat_message', {
+          sender: 'System',
+          message: `Game started! Real Life Auto-Caller 🎙️ is preparing to draw numbers.`,
+          system: true
+        });
 
-      io.to(roomCode).emit('chat_message', {
-        sender: 'System',
-        message: `Game started! It is ${room.players[room.currentTurnPlayerId].username}'s turn to call first.`,
-        system: true
-      });
+        startBingoAutoCaller(roomCode);
+      } else {
+        if (room.bingoMode === 'duocall') {
+          room.duoCallCount = 0;
+        }
+        room.turnOrder = Object.keys(room.players).sort(() => 0.5 - Math.random());
+        room.turnIndex = 0;
+        room.currentTurnPlayerId = room.turnOrder[0];
 
-      startBingoTurnTimer(roomCode);
+        io.to(roomCode).emit('bingo_game_started', {
+          currentTurnPlayerId: room.currentTurnPlayerId
+        });
+
+        io.to(roomCode).emit('chat_message', {
+          sender: 'System',
+          message: `Game started! It is ${room.players[room.currentTurnPlayerId].username}'s turn to call first.`,
+          system: true
+        });
+
+        startBingoTurnTimer(roomCode);
+      }
     }
 
     broadcastRoomUpdate(roomCode);
