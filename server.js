@@ -89,6 +89,95 @@ function generateHint(word, level = 0) {
   return hint.split('').join(' ');
 }
 
+// Helper to calculate completed lines on a 5x5 Bingo board (flat 25-array)
+function checkBingoLines(board, calledNumbers) {
+  if (!board) return 0;
+  
+  let lines = 0;
+
+  // Helper to check if a list of indices are all called
+  const checkIndices = (indices) => indices.every(idx => calledNumbers.includes(board[idx]));
+
+  // Check 5 rows
+  for (let r = 0; r < 5; r++) {
+    const rowIndices = [r*5, r*5+1, r*5+2, r*5+3, r*5+4];
+    if (checkIndices(rowIndices)) lines++;
+  }
+
+  // Check 5 columns
+  for (let c = 0; c < 5; c++) {
+    const colIndices = [c, c+5, c+10, c+15, c+20];
+    if (checkIndices(colIndices)) lines++;
+  }
+
+  // Check Diagonal 1 (top-left to bottom-right)
+  const diag1Indices = [0, 6, 12, 18, 24];
+  if (checkIndices(diag1Indices)) lines++;
+
+  // Check Diagonal 2 (top-right to bottom-left)
+  const diag2Indices = [4, 8, 12, 16, 20];
+  if (checkIndices(diag2Indices)) lines++;
+
+  return lines;
+}
+
+// Function to start the turn timer for Bingo
+function startBingoTurnTimer(roomCode) {
+  const room = rooms[roomCode];
+  if (!room || room.gameType !== 'bingo' || room.gameState !== 'playing') return;
+
+  if (room.timer) {
+    clearInterval(room.timer);
+    room.timer = null;
+  }
+
+  if (!room.bingoTurnTimerVal || room.bingoTurnTimerVal <= 0) {
+    return; // No timer enabled
+  }
+
+  room.timeLeft = room.bingoTurnTimerVal;
+
+  room.timer = setInterval(() => {
+    room.timeLeft -= 1;
+
+    if (room.timeLeft <= 0) {
+      clearInterval(room.timer);
+      room.timer = null;
+      
+      // Auto-call a remaining number
+      autoCallBingoNumber(roomCode);
+    } else {
+      io.to(roomCode).emit('timer_tick', { timeLeft: room.timeLeft });
+    }
+  }, 1000);
+}
+
+// Auto-call a random number if active player runs out of turn time
+function autoCallBingoNumber(roomCode) {
+  const room = rooms[roomCode];
+  if (!room || room.gameState !== 'playing') return;
+
+  const currentTurnPlayer = room.players[room.currentTurnPlayerId];
+  if (!currentTurnPlayer) return;
+
+  // Find remaining uncalled numbers
+  const allNumbers = Array.from({ length: 25 }, (_, i) => i + 1);
+  const remainingNumbers = allNumbers.filter(n => !room.calledNumbers.includes(n));
+
+  if (remainingNumbers.length === 0) return;
+
+  const randomIndex = Math.floor(Math.random() * remainingNumbers.length);
+  const selectedNumber = remainingNumbers[randomIndex];
+
+  io.to(roomCode).emit('chat_message', {
+    sender: 'System',
+    message: `${currentTurnPlayer.username} ran out of time! System auto-called ${selectedNumber}.`,
+    system: true
+  });
+
+  processCalledNumber(roomCode, selectedNumber);
+}
+
 // Function to send updated room state to all clients in the room
 function broadcastRoomUpdate(roomCode) {
   const room = rooms[roomCode];
@@ -101,32 +190,147 @@ function broadcastRoomUpdate(roomCode) {
     roundScore: p.roundScore,
     hasGuessed: p.hasGuessed,
     votedShowAnswer: p.votedShowAnswer,
-    lives: p.lives // Pass lives count to client
+    lives: p.lives,
+    isReady: p.isReady,
+    completedLines: p.completedLines || 0,
+    matchWins: p.matchWins || 0
   }));
 
-  // Sort players by score for the leaderboard
-  playersList.sort((a, b) => b.score - a.score);
+  // Sort players by score/wins
+  if (room.gameType === 'bingo') {
+    playersList.sort((a, b) => {
+      if (b.matchWins !== a.matchWins) return b.matchWins - a.matchWins;
+      return b.completedLines - a.completedLines;
+    });
+  } else {
+    playersList.sort((a, b) => b.score - a.score);
+  }
 
-  // Compute how many show answer votes we have
+  // Compute how many show answer votes we have (relevant for translate mode)
   const totalPlayers = Object.keys(room.players).length;
   const showAnswerVotes = Object.values(room.players).filter(p => p.votedShowAnswer).length;
 
   io.to(roomCode).emit('room_update', {
     code: roomCode,
     gameState: room.gameState,
+    gameType: room.gameType || 'translate',
     hostId: room.hostId,
     players: playersList,
+    totalPlayers,
+    currentTurnPlayerId: room.currentTurnPlayerId,
+    timeLeft: room.timeLeft,
+    
+    // Shabd Anuvad Specific
     round: room.round,
     totalRounds: room.totalRounds,
     showAnswerVotes,
-    totalPlayers,
-    timeLeft: room.timeLeft,
     hintsRevealed: room.hintsRevealed,
     hintState: room.hintState,
-    currentHindiWord: room.gameState === 'playing' ? room.currentWord.hindi : null,
+    currentHindiWord: (room.gameState === 'playing' && room.currentWord) ? room.currentWord.hindi : null,
     gameMode: room.gameMode,
-    currentTurnPlayerId: room.currentTurnPlayerId
+    
+    // Bingo Specific
+    calledNumbers: room.calledNumbers || [],
+    bingoTurnTimerVal: room.bingoTurnTimerVal || 0
   });
+}
+
+// Process a called bingo number, update player score/lines, check win condition, and rotate turns
+function processCalledNumber(roomCode, number) {
+  const room = rooms[roomCode];
+  if (!room) return;
+
+  // Add to called numbers
+  room.calledNumbers.push(number);
+
+  // Stop current turn timer
+  if (room.timer) {
+    clearInterval(room.timer);
+    room.timer = null;
+  }
+
+  // Recalculate completed lines for all players
+  const winners = [];
+  Object.values(room.players).forEach(p => {
+    p.completedLines = checkBingoLines(p.bingoBoard, room.calledNumbers);
+    p.score = p.completedLines; // Score is lines completed
+
+    if (p.completedLines >= 5) {
+      winners.push(p);
+    }
+  });
+
+  // Notify clients about the called number and completed lines updates
+  io.to(roomCode).emit('bingo_number_called', {
+    number: number,
+    calledNumbers: room.calledNumbers
+  });
+
+  if (winners.length > 0) {
+    // Increment match wins for all winners in this game round
+    winners.forEach(w => {
+      w.matchWins = (w.matchWins || 0) + 1;
+    });
+
+    // Check if the overall match is completed
+    const targetWins = Math.ceil((room.totalRounds || 5) / 2);
+    const matchOver = Object.values(room.players).some(p => (p.matchWins || 0) >= targetWins) || (room.round >= room.totalRounds);
+
+    if (matchOver) {
+      room.gameState = 'game_over';
+
+      // Leaderboard shows total matchWins
+      const finalScores = Object.values(room.players).map(p => ({
+        username: p.username,
+        score: p.matchWins || 0
+      })).sort((a, b) => b.score - a.score);
+
+      const matchWinner = finalScores[0];
+      const winnerMsg = `${matchWinner.username} won the match with ${matchWinner.score} round wins! 🏆`;
+
+      io.to(roomCode).emit('game_over', { finalScores, message: winnerMsg });
+      broadcastRoomUpdate(roomCode);
+      return;
+    } else {
+      // Current round ends, but match is NOT over!
+      room.gameState = 'round_end';
+
+      io.to(roomCode).emit('bingo_round_ended', {
+        winnerNames: winners.map(w => w.username).join(', '),
+        round: room.round,
+        totalRounds: room.totalRounds
+      });
+
+      // Prepare for the next round
+      room.round += 1;
+
+      // Start next board placement setup in 5 seconds
+      setTimeout(() => {
+        if (!rooms[roomCode]) return;
+        room.gameState = 'placement';
+        Object.values(room.players).forEach(p => {
+          p.isReady = false;
+          p.bingoBoard = null;
+          p.completedLines = 0;
+          p.score = 0;
+        });
+        io.to(roomCode).emit('bingo_start_placement');
+        broadcastRoomUpdate(roomCode);
+      }, 5000);
+
+      broadcastRoomUpdate(roomCode);
+      return;
+    }
+  }
+
+  // Rotate turn to next player
+  room.turnIndex = (room.turnIndex + 1) % room.turnOrder.length;
+  room.currentTurnPlayerId = room.turnOrder[room.turnIndex];
+
+  // Resume turn timer
+  startBingoTurnTimer(roomCode);
+
+  broadcastRoomUpdate(roomCode);
 }
 
 // Function to end the current round
@@ -349,22 +553,27 @@ io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
 
   // 1. Create Room
-  socket.on('create_room', ({ username }) => {
+  socket.on('create_room', ({ username, gameType }) => {
     if (!username || username.trim() === '') {
       return socket.emit('error_message', 'Invalid username.');
     }
 
     const roomCode = generateRoomCode();
     
-    // Choose 10 random words from words pool for the game
+    // Choose 10 random words from words pool for the translate game
     const shuffledWords = [...words].sort(() => 0.5 - Math.random());
     const selectedWords = shuffledWords.slice(0, 10);
+
+    const typeOfGame = gameType === 'bingo' ? 'bingo' : 'translate';
 
     rooms[roomCode] = {
       id: roomCode,
       hostId: socket.id,
       players: {},
       gameState: 'lobby',
+      gameType: typeOfGame,
+      
+      // Translate Game Configuration
       round: 0,
       totalRounds: 10,
       roundWords: selectedWords,
@@ -375,6 +584,12 @@ io.on('connection', (socket) => {
       hintsRevealed: 0,
       hintState: '',
       gameMode: 'classic',
+      
+      // Bingo Game Configuration
+      calledNumbers: [],
+      bingoTurnTimerVal: 30, // Default turn time (30s)
+      
+      // Shared Connection/Turn details
       turnOrder: [],
       turnIndex: 0,
       currentTurnPlayerId: null
@@ -388,11 +603,15 @@ io.on('connection', (socket) => {
       roundScore: 0,
       hasGuessed: false,
       votedShowAnswer: false,
-      lives: 3
+      lives: 3,
+      // Bingo specific fields
+      isReady: false,
+      bingoBoard: null,
+      completedLines: 0
     };
 
     socket.join(roomCode);
-    console.log(`Room created: ${roomCode} by ${username}`);
+    console.log(`Room created: ${roomCode} by ${username} [Game: ${typeOfGame}]`);
     
     broadcastRoomUpdate(roomCode);
   });
@@ -430,7 +649,11 @@ io.on('connection', (socket) => {
       roundScore: 0,
       hasGuessed: false,
       votedShowAnswer: false,
-      lives: 3
+      lives: 3,
+      // Bingo specific fields
+      isReady: false,
+      bingoBoard: null,
+      completedLines: 0
     };
 
     socket.join(roomCode);
@@ -447,7 +670,10 @@ io.on('connection', (socket) => {
   });
 
   // 3. Start Game
-  socket.on('start_game', ({ code, totalRounds, difficulty, roundTime, gameMode }) => {
+  socket.on('start_game', (data) => {
+    const code = data.code;
+    if (!code) return socket.emit('error_message', 'Room code is missing.');
+
     const roomCode = code.toUpperCase().trim();
     const room = rooms[roomCode];
 
@@ -455,29 +681,50 @@ io.on('connection', (socket) => {
     if (room.hostId !== socket.id) return socket.emit('error_message', 'Only the host can start the game.');
     if (Object.keys(room.players).length < 1) return socket.emit('error_message', 'Not enough players.');
 
-    // Set round configurations
+    if (room.gameType === 'bingo') {
+      room.bingoTurnTimerVal = parseInt(data.bingoTurnTimer) || 0;
+      const bRounds = parseInt(data.bingoMatchRounds) || 5;
+      room.totalRounds = Math.min(Math.max(bRounds, 3), 21); // enforce min 3, max 21 rounds for bingo
+      room.round = 1;
+      room.gameState = 'placement';
+      
+      // Reset players states for Bingo Board Placement phase
+      Object.values(room.players).forEach(p => {
+        p.isReady = false;
+        p.bingoBoard = null;
+        p.completedLines = 0;
+        p.score = 0;
+        p.matchWins = 0; // Reset wins
+      });
+
+      io.to(roomCode).emit('bingo_start_placement');
+      broadcastRoomUpdate(roomCode);
+      return;
+    }
+
+    // Classic/Survival translate game setup
+    const roundTime = data.roundTime || 40;
+    const totalRounds = data.totalRounds || 10;
+    const gameMode = data.gameMode || 'classic';
+
     room.roundTime = parseInt(roundTime) || 40;
     room.gameMode = gameMode || 'classic';
 
     const roundsCount = parseInt(totalRounds) || 10;
-    room.totalRounds = Math.min(Math.max(roundsCount, 3), 20); // enforce min 3, max 20 rounds
+    room.totalRounds = Math.min(Math.max(roundsCount, 3), 250); // enforce min 3, max 250 rounds
 
-    // Select words pool
     const wordsPool = [...words];
-
-    // Shuffle and select
     const shuffledWords = shuffleArray(wordsPool);
     if (room.gameMode === 'survival') {
-      room.roundWords = shuffledWords; // Keep all words to prevent repeats in survival
+      room.roundWords = shuffledWords;
     } else {
       room.roundWords = shuffledWords.slice(0, room.totalRounds);
     }
 
-    // Turn by Turn survival setup
     if (room.gameMode === 'survival') {
       Object.values(room.players).forEach(p => {
         p.score = 0;
-        p.lives = 3; // Reset lives for survival
+        p.lives = 3;
       });
       room.turnOrder = Object.keys(room.players).sort(() => 0.5 - Math.random());
       room.turnIndex = 0;
@@ -487,6 +734,91 @@ io.on('connection', (socket) => {
     room.round = 0;
     io.to(roomCode).emit('game_started');
     startNextRound(roomCode);
+  });
+
+  // Bingo: Submit Board
+  socket.on('submit_bingo_board', ({ code, board }) => {
+    const roomCode = code.toUpperCase().trim();
+    const room = rooms[roomCode];
+    if (!room || room.gameState !== 'placement') return;
+
+    const player = room.players[socket.id];
+    if (!player) return;
+
+    // Validate board
+    if (!Array.isArray(board) || board.length !== 25) {
+      return socket.emit('error_message', 'Invalid board structure.');
+    }
+
+    const uniqueNumbers = new Set(board);
+    const isValid = board.every(n => typeof n === 'number' && n >= 1 && n <= 25) && uniqueNumbers.size === 25;
+    if (!isValid) {
+      return socket.emit('error_message', 'Board must contain unique numbers from 1 to 25.');
+    }
+
+    player.bingoBoard = board;
+    player.isReady = true;
+
+    socket.emit('bingo_board_accepted');
+    
+    io.to(roomCode).emit('chat_message', {
+      sender: 'System',
+      message: `${player.username} is ready!`,
+      system: true
+    });
+
+    // Check if everyone is ready
+    const allPlayersReady = Object.values(room.players).every(p => p.isReady);
+    if (allPlayersReady) {
+      room.gameState = 'playing';
+      room.calledNumbers = [];
+      room.turnOrder = Object.keys(room.players).sort(() => 0.5 - Math.random());
+      room.turnIndex = 0;
+      room.currentTurnPlayerId = room.turnOrder[0];
+
+      io.to(roomCode).emit('bingo_game_started', {
+        currentTurnPlayerId: room.currentTurnPlayerId
+      });
+
+      io.to(roomCode).emit('chat_message', {
+        sender: 'System',
+        message: `Game started! It is ${room.players[room.currentTurnPlayerId].username}'s turn to call first.`,
+        system: true
+      });
+
+      startBingoTurnTimer(roomCode);
+    }
+
+    broadcastRoomUpdate(roomCode);
+  });
+
+  // Bingo: Call Number
+  socket.on('call_bingo_number', ({ code, number }) => {
+    const roomCode = code.toUpperCase().trim();
+    const room = rooms[roomCode];
+    if (!room || room.gameState !== 'playing' || room.gameType !== 'bingo') return;
+
+    if (socket.id !== room.currentTurnPlayerId) {
+      return socket.emit('error_message', "It is not your turn to call a number!");
+    }
+
+    const n = parseInt(number);
+    if (isNaN(n) || n < 1 || n > 25) {
+      return socket.emit('error_message', 'Invalid number called.');
+    }
+
+    if (room.calledNumbers.includes(n)) {
+      return socket.emit('error_message', 'Number has already been called.');
+    }
+
+    const player = room.players[socket.id];
+    io.to(roomCode).emit('chat_message', {
+      sender: 'System',
+      message: `${player.username} called ${n}!`,
+      system: true
+    });
+
+    processCalledNumber(roomCode, n);
   });
 
   // 4. Submit Guess
@@ -636,8 +968,55 @@ io.on('connection', (socket) => {
             }
           }
 
+          // Bingo Mode cleanup
+          if (room.gameType === 'bingo') {
+            room.turnOrder = room.turnOrder.filter(id => id !== socket.id);
+            
+            if (room.gameState === 'placement') {
+              const allReady = Object.values(room.players).every(p => p.isReady);
+              if (allReady && Object.keys(room.players).length > 0) {
+                room.gameState = 'playing';
+                room.calledNumbers = [];
+                room.turnOrder = Object.keys(room.players).sort(() => 0.5 - Math.random());
+                room.turnIndex = 0;
+                room.currentTurnPlayerId = room.turnOrder[0];
+                io.to(roomCode).emit('bingo_game_started', {
+                  currentTurnPlayerId: room.currentTurnPlayerId
+                });
+                startBingoTurnTimer(roomCode);
+              }
+            } else if (room.gameState === 'playing') {
+              const remainingPlayersCount = Object.keys(room.players).length;
+              if (remainingPlayersCount <= 1 && remainingPlayersCount > 0) {
+                room.gameState = 'game_over';
+                const lastPlayerId = Object.keys(room.players)[0];
+                const lastPlayer = room.players[lastPlayerId];
+                const finalScores = [{ username: lastPlayer.username, score: lastPlayer.completedLines }];
+                io.to(roomCode).emit('game_over', {
+                  finalScores,
+                  message: `All other players disconnected. ${lastPlayer.username} wins by default! 🏆`
+                });
+                if (room.timer) {
+                  clearInterval(room.timer);
+                  room.timer = null;
+                }
+              } else if (room.currentTurnPlayerId === socket.id) {
+                if (room.turnIndex >= room.turnOrder.length) {
+                  room.turnIndex = 0;
+                }
+                room.currentTurnPlayerId = room.turnOrder[room.turnIndex];
+                io.to(roomCode).emit('chat_message', {
+                  sender: 'System',
+                  message: `Player left. It is now ${room.players[room.currentTurnPlayerId].username}'s turn.`,
+                  system: true
+                });
+                startBingoTurnTimer(roomCode);
+              }
+            }
+          }
+
           // If the game was active, check if the remaining players have all guessed or voted
-          if (room.gameState === 'playing') {
+          if (room.gameType === 'translate' && room.gameState === 'playing') {
             const allVoted = Object.values(room.players).every(p => p.votedShowAnswer);
             const allGuessed = Object.values(room.players).every(p => p.hasGuessed);
 

@@ -1,5 +1,4 @@
-// Client-Side Javascript: Shabd Anuvad
-
+// Client-Side Javascript: Shabd Anuvad & Bingo
 const socket = io();
 
 // Application State
@@ -11,11 +10,38 @@ let currentRoundTime = 40;
 let lastPlayersList = [];
 let blockInput = false;
 
+// Bingo specific application state
+let selectedGameType = 'translate';
+let bingoSetupBoard = Array(25).fill(null);
+let bingoNextNumber = 1;
+let myBingoBoard = [];
+let calledNumbers = [];
+let currentTurnPlayerId = null;
+let previousLinesCount = 0;
+
+// Game Type selection handler (called from Welcome Screen)
+window.selectGameType = function(type) {
+  selectedGameType = type;
+  
+  const translateCard = document.getElementById('select-game-translate');
+  const bingoCard = document.getElementById('select-game-bingo');
+  
+  if (type === 'bingo') {
+    translateCard.classList.remove('active');
+    bingoCard.classList.add('active');
+  } else {
+    translateCard.classList.add('active');
+    bingoCard.classList.remove('active');
+  }
+};
+
 // DOM Elements: Navigation
 const screens = {
   welcome: document.getElementById('screen-welcome'),
   lobby: document.getElementById('screen-lobby'),
   game: document.getElementById('screen-game'),
+  bingoSetup: document.getElementById('screen-bingo-setup'),
+  bingoGame: document.getElementById('screen-bingo-game'),
   gameover: document.getElementById('screen-gameover')
 };
 
@@ -121,6 +147,34 @@ function playSuccessSound() {
     }, 100);
   } catch (e) {
     console.warn("Web Audio API not supported or blocked:", e);
+  }
+}
+
+// Play an ascending arpeggio chime when a line is completed
+function playLineCompleteSound() {
+  try {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    
+    // Distinct ascending arpeggio notes (C5, E5, G5, C6)
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle'; // softer than square
+      osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+      
+      gain.gain.setValueAtTime(0.12, now + idx * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.start(now + idx * 0.08);
+      osc.stop(now + idx * 0.08 + 0.35);
+    });
+  } catch (e) {
+    console.warn("Audio playback error:", e);
   }
 }
 
@@ -456,7 +510,7 @@ btnCreateRoom.addEventListener('click', () => {
   // Store username in local storage for convenience
   localStorage.setItem('shabd_anuvad_username', username);
   currentUsername = username;
-  socket.emit('create_room', { username: username });
+  socket.emit('create_room', { username: username, gameType: selectedGameType });
 });
 
 btnJoinRoom.addEventListener('click', () => {
@@ -482,6 +536,18 @@ lobbyRoomCodeBadge.addEventListener('click', copyRoomCode);
 
 btnStartGame.addEventListener('click', () => {
   if (!isHost) return;
+  
+  if (selectedGameType === 'bingo') {
+    const turnTimer = document.getElementById('bingo-timer-select').value;
+    const matchRounds = document.getElementById('bingo-rounds-select').value;
+    socket.emit('start_game', {
+      code: currentRoomCode,
+      bingoTurnTimer: turnTimer,
+      bingoMatchRounds: matchRounds
+    });
+    return;
+  }
+
   const rounds = selectRounds.value;
   const gameMode = document.getElementById('mode-select').value;
   const roundTime = document.getElementById('timer-select').value;
@@ -546,6 +612,16 @@ btnBackHome.addEventListener('click', () => {
   guessInput.className = '';
   guessFeedback.className = 'guess-feedback';
   guessFeedback.textContent = '';
+  
+  // Clear Bingo states
+  bingoSetupBoard = Array(25).fill(null);
+  bingoNextNumber = 1;
+  myBingoBoard = [];
+  calledNumbers = [];
+  currentTurnPlayerId = null;
+  const bingoChatBox = document.getElementById('bingo-chat-box');
+  if (bingoChatBox) bingoChatBox.innerHTML = '';
+  
   showScreen('welcome');
   
   if (window.location.pathname !== '/') {
@@ -568,7 +644,7 @@ socket.on('room_update', (data) => {
   currentRoomCode = data.code;
   
   // Dynamically update URL to match the active room path
-  if (data.gameState === 'lobby' || data.gameState === 'playing' || data.gameState === 'round_end') {
+  if (data.gameState === 'lobby' || data.gameState === 'playing' || data.gameState === 'round_end' || data.gameState === 'placement') {
     const targetPath = `/room/${data.code}`;
     if (window.location.pathname !== targetPath) {
       window.history.pushState(null, '', targetPath);
@@ -578,185 +654,329 @@ socket.on('room_update', (data) => {
   // Verify Host status
   isHost = (socket.id === data.hostId);
   
-  // Lobby/Game screens updates
-  if (data.gameState === 'lobby') {
-    showScreen('lobby');
-    lobbyRoomCode.textContent = data.code;
-    lobbyPlayerCount.textContent = data.players.length;
+  if (data.gameType === 'bingo') {
+    selectedGameType = 'bingo';
     
-    // Render player lists
-    lobbyPlayersList.innerHTML = '';
-    data.players.forEach(p => {
-      const isMe = p.id === socket.id;
-      const isPlayerHost = p.id === data.hostId;
-      
-      const li = document.createElement('li');
-      li.innerHTML = `
-        <div class="player-name-wrapper">
-          <div class="player-avatar">${p.username.charAt(0).toUpperCase()}</div>
-          <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
-        </div>
-        ${isPlayerHost ? '<span class="player-role-badge">Host</span>' : ''}
-      `;
-      lobbyPlayersList.appendChild(li);
-    });
-
-    // Control Host Panel Visibility
-    if (isHost) {
-      hostSettings.style.display = 'block';
-      guestWaitingMsg.style.display = 'none';
-    } else {
-      hostSettings.style.display = 'none';
-      guestWaitingMsg.style.display = 'block';
-    }
-  } 
-  
-  else if (data.gameState === 'playing' || data.gameState === 'round_end') {
-    // Cache player list
-    lastPlayersList = data.players;
-    
-    // Toggle JKLM circular playground vs classic word prompt based on gameMode
-    const bombPlayground = document.getElementById('bomb-playground');
-    const gameClassicPrompt = document.getElementById('game-classic-prompt');
-    const playCard = document.querySelector('.play-card');
-    
-    if (data.gameMode === 'survival') {
-      if (bombPlayground) bombPlayground.style.display = 'block';
-      if (gameClassicPrompt) gameClassicPrompt.style.display = 'none';
-      playCard.classList.add('mode-survival');
-      
-      const promptHindiWordSurvival = document.getElementById('prompt-hindi-word-survival');
-      if (promptHindiWordSurvival && data.currentHindiWord) {
-        promptHindiWordSurvival.textContent = data.currentHindiWord;
-      }
-      
-      // Render players around the center bomb
-      updatePlayersRing(data.players, data.currentTurnPlayerId, data.gameMode);
-    } else {
-      if (bombPlayground) bombPlayground.style.display = 'none';
-      if (gameClassicPrompt) gameClassicPrompt.style.display = 'block';
-      playCard.classList.remove('mode-survival');
-      
-      if (data.currentHindiWord) {
-        promptHindiWord.textContent = data.currentHindiWord;
-      }
+    // Toggle lobby settings panels
+    const tGroup = document.getElementById('translate-settings-group');
+    const bGroup = document.getElementById('bingo-settings-group');
+    if (tGroup && bGroup) {
+      tGroup.style.display = 'none';
+      bGroup.style.display = 'block';
     }
 
-    // Sync Game Screen UI Elements
-    gameCurrentRound.textContent = data.round;
-    gameTotalRounds.textContent = data.totalRounds;
-    
-    // Update show answer votes count
-    showAnswerVotesCount.textContent = `(${data.showAnswerVotes}/${data.totalPlayers})`;
-    
-    // Render Scoreboard
-    gamePlayersList.innerHTML = '';
-    data.players.forEach(p => {
-      const isMe = p.id === socket.id;
-      const isPlayerHost = p.id === data.hostId;
+    if (data.gameState === 'lobby') {
+      showScreen('lobby');
+      lobbyRoomCode.textContent = data.code;
+      lobbyPlayerCount.textContent = data.players.length;
       
-      const li = document.createElement('li');
-      if (p.hasGuessed) {
-        li.className = 'player-done';
+      // Render player lists
+      lobbyPlayersList.innerHTML = '';
+      data.players.forEach(p => {
+        const isMe = p.id === socket.id;
+        const isPlayerHost = p.id === data.hostId;
+        
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="player-name-wrapper">
+            <div class="player-avatar">${p.username.charAt(0).toUpperCase()}</div>
+            <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
+          </div>
+          ${isPlayerHost ? '<span class="player-role-badge">Host</span>' : ''}
+        `;
+        lobbyPlayersList.appendChild(li);
+      });
+
+      // Control Host Panel Visibility
+      if (isHost) {
+        hostSettings.style.display = 'block';
+        guestWaitingMsg.style.display = 'none';
+      } else {
+        hostSettings.style.display = 'none';
+        guestWaitingMsg.style.display = 'block';
       }
-      
-      let statusHtml = '';
-      if (p.hasGuessed) {
-        statusHtml = `<span class="player-guess-status">Guessed</span>`;
+    } 
+    else if (data.gameState === 'placement') {
+      showScreen('bingoSetup');
+      // Render setup ready status list
+      const statusContainer = document.getElementById('bingo-players-ready-status');
+      if (statusContainer) {
+        statusContainer.innerHTML = '';
+        data.players.forEach(p => {
+          const div = document.createElement('div');
+          div.className = 'player-ready-item';
+          div.innerHTML = `
+            <span>${p.username} ${p.id === socket.id ? '(You)' : ''}</span>
+            <span class="ready-badge ${p.isReady ? 'ready' : 'not-ready'}">${p.isReady ? 'Ready 👍' : 'Placing... ✍️'}</span>
+          `;
+          statusContainer.appendChild(div);
+        });
       }
-      
-      let voteHtml = '';
-      if (p.votedShowAnswer) {
-        voteHtml = `<span class="vote-star">⭐ Answer Vote</span>`;
+    } 
+    else if (data.gameState === 'playing') {
+      showScreen('bingoGame');
+      currentTurnPlayerId = data.currentTurnPlayerId;
+      lastPlayersList = data.players; // Cache for timer countdown
+      calledNumbers = data.calledNumbers;
+
+      // Draw active board
+      renderBingoPlayGrid(myBingoBoard, data.calledNumbers);
+
+      // Light up letters
+      const me = data.players.find(p => p.id === socket.id);
+      if (me) {
+        const myLines = me.completedLines || 0;
+        document.getElementById('bingo-my-lines').textContent = `${myLines} / 5`;
+        
+        // Play line complete sound if we scored a new completed line
+        if (myLines > previousLinesCount) {
+          playLineCompleteSound();
+        }
+        previousLinesCount = myLines;
+        
+        const letters = document.querySelectorAll('.bingo-letter');
+        letters.forEach((l, idx) => {
+          if (idx < myLines) {
+            l.classList.add('lit');
+          } else {
+            l.classList.remove('lit');
+          }
+        });
       }
 
-      // Add hearts for survival mode
-      let livesHtml = '';
+      // Turn banner
+      const activePlayer = data.players.find(p => p.id === data.currentTurnPlayerId);
+      const activeName = activePlayer ? activePlayer.username : 'Player';
+      const isMyTurn = data.currentTurnPlayerId === socket.id;
+      const turnBanner = document.getElementById('bingo-turn-banner');
+      
+      if (isMyTurn) {
+        turnBanner.textContent = `⭐ It's Your Turn! Call a number.`;
+        turnBanner.classList.add('your-turn');
+      } else {
+        turnBanner.textContent = `It's ${activeName}'s Turn.`;
+        turnBanner.classList.remove('your-turn');
+      }
+
+      // Draw scoreboard
+      const scoreboard = document.getElementById('bingo-players-list');
+      scoreboard.innerHTML = '';
+      data.players.forEach(p => {
+        const isMe = p.id === socket.id;
+        const isTurn = p.id === data.currentTurnPlayerId;
+        const li = document.createElement('li');
+        if (isTurn) {
+          li.className = 'active-turn';
+        }
+        
+        const letters = ['B', 'I', 'N', 'G', 'O'];
+        const pLines = p.completedLines || 0;
+        let lineRepr = letters.map((l, idx) => idx < pLines ? `<span class="score-letter lit">${l}</span>` : `<span class="score-letter">${l}</span>`).join(' ');
+
+        li.innerHTML = `
+          <div class="player-score-info">
+            <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
+            ${p.id === data.hostId ? '<span class="player-role-badge" style="font-size:0.6rem; padding:1px 4px;">Host</span>' : ''}
+            <span class="match-wins-badge" style="margin-left:5px; font-size:0.75rem; color:var(--warning); font-weight:bold;">🏆 ${p.matchWins || 0} Wins</span>
+          </div>
+          <div class="bingo-score-badge">
+            ${lineRepr} (${pLines} lines)
+          </div>
+        `;
+        scoreboard.appendChild(li);
+      });
+    }
+  } else {
+    selectedGameType = 'translate';
+    
+    // Toggle lobby settings panels
+    const tGroup = document.getElementById('translate-settings-group');
+    const bGroup = document.getElementById('bingo-settings-group');
+    if (tGroup && bGroup) {
+      tGroup.style.display = 'block';
+      bGroup.style.display = 'none';
+    }
+
+    // Lobby/Game screens updates
+    if (data.gameState === 'lobby') {
+      showScreen('lobby');
+      lobbyRoomCode.textContent = data.code;
+      lobbyPlayerCount.textContent = data.players.length;
+      
+      // Render player lists
+      lobbyPlayersList.innerHTML = '';
+      data.players.forEach(p => {
+        const isMe = p.id === socket.id;
+        const isPlayerHost = p.id === data.hostId;
+        
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="player-name-wrapper">
+            <div class="player-avatar">${p.username.charAt(0).toUpperCase()}</div>
+            <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
+          </div>
+          ${isPlayerHost ? '<span class="player-role-badge">Host</span>' : ''}
+        `;
+        lobbyPlayersList.appendChild(li);
+      });
+
+      // Control Host Panel Visibility
+      if (isHost) {
+        hostSettings.style.display = 'block';
+        guestWaitingMsg.style.display = 'none';
+      } else {
+        hostSettings.style.display = 'none';
+        guestWaitingMsg.style.display = 'block';
+      }
+    } 
+    
+    else if (data.gameState === 'playing' || data.gameState === 'round_end') {
+      // Cache player list
+      lastPlayersList = data.players;
+      
+      // Toggle JKLM circular playground vs classic word prompt based on gameMode
+      const bombPlayground = document.getElementById('bomb-playground');
+      const gameClassicPrompt = document.getElementById('game-classic-prompt');
+      const playCard = document.querySelector('.play-card');
+      
       if (data.gameMode === 'survival') {
-        const livesCount = Math.max(0, p.lives);
-        if (livesCount === 0) {
-          livesHtml = `<span class="vote-star" style="background: rgba(255,0,0,0.12); color:#ff3b30; border-color:#ff3b30;">💀 Eliminated</span>`;
-        } else {
-          livesHtml = `<span style="margin-left: 8px; font-size: 0.9rem;">${'❤️'.repeat(livesCount)}</span>`;
+        if (bombPlayground) bombPlayground.style.display = 'block';
+        if (gameClassicPrompt) gameClassicPrompt.style.display = 'none';
+        playCard.classList.add('mode-survival');
+        
+        const promptHindiWordSurvival = document.getElementById('prompt-hindi-word-survival');
+        if (promptHindiWordSurvival && data.currentHindiWord) {
+          promptHindiWordSurvival.textContent = data.currentHindiWord;
+        }
+        
+        // Render players around the center bomb
+        updatePlayersRing(data.players, data.currentTurnPlayerId, data.gameMode);
+      } else {
+        if (bombPlayground) bombPlayground.style.display = 'none';
+        if (gameClassicPrompt) gameClassicPrompt.style.display = 'block';
+        playCard.classList.remove('mode-survival');
+        
+        if (data.currentHindiWord) {
+          promptHindiWord.textContent = data.currentHindiWord;
         }
       }
 
-      li.innerHTML = `
-        <div class="player-score-info">
-          <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
-          ${isPlayerHost ? '<span class="player-role-badge" style="font-size:0.6rem; padding:1px 4px;">Host</span>' : ''}
-          ${livesHtml}
-          ${voteHtml}
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          ${statusHtml}
-          <span class="player-score-val">${p.score} Correct</span>
-        </div>
-      `;
-      gamePlayersList.appendChild(li);
-    });
-
-    // Sync my own guess state
-    const me = data.players.find(p => p.id === socket.id);
-    if (me) {
-      hasGuessedThisRound = me.hasGuessed;
+      // Sync Game Screen UI Elements
+      gameCurrentRound.textContent = data.round;
+      gameTotalRounds.textContent = data.totalRounds;
       
-      // Update Show Answer vote button style
-      if (me.votedShowAnswer) {
-        btnVoteShowAnswer.classList.remove('btn-warning');
-        btnVoteShowAnswer.classList.add('btn-secondary');
-        btnVoteShowAnswer.innerHTML = `Voted Show Answer <span id="show-answer-votes-count">(${data.showAnswerVotes}/${data.totalPlayers})</span>`;
-      } else {
-        btnVoteShowAnswer.classList.remove('btn-secondary');
-        btnVoteShowAnswer.classList.add('btn-warning');
-        btnVoteShowAnswer.innerHTML = `Show Answer <span id="show-answer-votes-count">(${data.showAnswerVotes}/${data.totalPlayers})</span>`;
-      }
-
-      // Check input enablement based on game mode and turn
-      const turnBanner = document.getElementById('game-turn-banner');
+      // Update show answer votes count
+      showAnswerVotesCount.textContent = `(${data.showAnswerVotes}/${data.totalPlayers})`;
       
-      if (data.gameMode === 'survival') {
-        turnBanner.style.display = 'block';
-        const activePlayer = data.players.find(p => p.id === data.currentTurnPlayerId);
-        const activeName = activePlayer ? activePlayer.username : 'Unknown';
+      // Render Scoreboard
+      gamePlayersList.innerHTML = '';
+      data.players.forEach(p => {
+        const isMe = p.id === socket.id;
+        const isPlayerHost = p.id === data.hostId;
         
-        if (socket.id === data.currentTurnPlayerId) {
-          // My turn!
-          turnBanner.classList.add('my-turn');
-          turnBanner.innerHTML = `👉 IT IS YOUR TURN! Translate the word.`;
+        const li = document.createElement('li');
+        if (p.hasGuessed) {
+          li.className = 'player-done';
+        }
+        
+        let statusHtml = '';
+        if (p.hasGuessed) {
+          statusHtml = `<span class="player-guess-status">Guessed</span>`;
+        }
+        
+        let voteHtml = '';
+        if (p.votedShowAnswer) {
+          voteHtml = `<span class="vote-star">⭐ Answer Vote</span>`;
+        }
+
+        // Add hearts for survival mode
+        let livesHtml = '';
+        if (data.gameMode === 'survival') {
+          const livesCount = Math.max(0, p.lives);
+          if (livesCount === 0) {
+            livesHtml = `<span class="vote-star" style="background: rgba(255,0,0,0.12); color:#ff3b30; border-color:#ff3b30;">💀 Eliminated</span>`;
+          } else {
+            livesHtml = `<span style="margin-left: 8px; font-size: 0.9rem;">${'❤️'.repeat(livesCount)}</span>`;
+          }
+        }
+
+        li.innerHTML = `
+          <div class="player-score-info">
+            <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
+            ${isPlayerHost ? '<span class="player-role-badge" style="font-size:0.6rem; padding:1px 4px;">Host</span>' : ''}
+            ${livesHtml}
+            ${voteHtml}
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            ${statusHtml}
+            <span class="player-score-val">${p.score} Correct</span>
+          </div>
+        `;
+        gamePlayersList.appendChild(li);
+      });
+
+      // Sync my own guess state
+      const me = data.players.find(p => p.id === socket.id);
+      if (me) {
+        hasGuessedThisRound = me.hasGuessed;
+        
+        // Update Show Answer vote button style
+        if (me.votedShowAnswer) {
+          btnVoteShowAnswer.classList.remove('btn-warning');
+          btnVoteShowAnswer.classList.add('btn-secondary');
+          btnVoteShowAnswer.innerHTML = `Voted Show Answer <span id="show-answer-votes-count">(${data.showAnswerVotes}/${data.totalPlayers})</span>`;
+        } else {
+          btnVoteShowAnswer.classList.remove('btn-secondary');
+          btnVoteShowAnswer.classList.add('btn-warning');
+          btnVoteShowAnswer.innerHTML = `Show Answer <span id="show-answer-votes-count">(${data.showAnswerVotes}/${data.totalPlayers})</span>`;
+        }
+
+        // Check input enablement based on game mode and turn
+        const turnBanner = document.getElementById('game-turn-banner');
+        
+        if (data.gameMode === 'survival') {
+          turnBanner.style.display = 'block';
+          const activePlayer = data.players.find(p => p.id === data.currentTurnPlayerId);
+          const activeName = activePlayer ? activePlayer.username : 'Unknown';
+          
+          if (socket.id === data.currentTurnPlayerId) {
+            // My turn!
+            turnBanner.classList.add('my-turn');
+            turnBanner.innerHTML = `👉 IT IS YOUR TURN! Translate the word.`;
+            
+            if (me.hasGuessed) {
+              setGuessInputEnabled(false, "Correct answer submitted!", true);
+              btnSubmitGuess.disabled = true;
+            } else if (data.gameState === 'playing') {
+              const isEliminated = me.lives <= 0;
+              setGuessInputEnabled(!isEliminated, isEliminated ? "You are eliminated!" : "Type your English translation...");
+              btnSubmitGuess.disabled = isEliminated;
+            } else {
+              setGuessInputEnabled(false, "Waiting...");
+              btnSubmitGuess.disabled = true;
+            }
+          } else {
+            // Someone else's turn!
+            turnBanner.classList.remove('my-turn');
+            turnBanner.innerHTML = `Waiting for <span style="font-weight:bold; color:var(--accent);">${activeName}</span>'s turn...`;
+            
+            setGuessInputEnabled(false, `Waiting for ${activeName}...`);
+            btnSubmitGuess.disabled = true;
+          }
+        } else {
+          // Classic race mode
+          turnBanner.style.display = 'none';
           
           if (me.hasGuessed) {
-            setGuessInputEnabled(false, "Correct answer submitted!", true);
+            setGuessInputEnabled(false, "Answer guessed correctly!", true);
             btnSubmitGuess.disabled = true;
           } else if (data.gameState === 'playing') {
-            const isEliminated = me.lives <= 0;
-            setGuessInputEnabled(!isEliminated, isEliminated ? "You are eliminated!" : "Type your English translation...");
-            btnSubmitGuess.disabled = isEliminated;
+            setGuessInputEnabled(true, "Type your English translation...");
+            btnSubmitGuess.disabled = false;
           } else {
             setGuessInputEnabled(false, "Waiting...");
             btnSubmitGuess.disabled = true;
           }
-        } else {
-          // Someone else's turn!
-          turnBanner.classList.remove('my-turn');
-          turnBanner.innerHTML = `Waiting for <span style="font-weight:bold; color:var(--accent);">${activeName}</span>'s turn...`;
-          
-          setGuessInputEnabled(false, `Waiting for ${activeName}...`);
-          btnSubmitGuess.disabled = true;
-        }
-      } else {
-        // Classic race mode
-        turnBanner.style.display = 'none';
-        
-        if (me.hasGuessed) {
-          setGuessInputEnabled(false, "Answer guessed correctly!", true);
-          btnSubmitGuess.disabled = true;
-        } else if (data.gameState === 'playing') {
-          setGuessInputEnabled(true, "Type your English translation...");
-          btnSubmitGuess.disabled = false;
-        } else {
-          setGuessInputEnabled(false, "Waiting...");
-          btnSubmitGuess.disabled = true;
         }
       }
     }
@@ -865,6 +1085,25 @@ socket.on('round_started', (data) => {
 
 // 5. Timer Tick Update
 socket.on('timer_tick', (data) => {
+  if (selectedGameType === 'bingo') {
+    const activePlayer = lastPlayersList.find(p => p.id === currentTurnPlayerId);
+    const activeName = activePlayer ? activePlayer.username : "Player";
+    const isMe = currentTurnPlayerId === socket.id;
+    const turnBanner = document.getElementById('bingo-turn-banner');
+    
+    if (turnBanner) {
+      if (isMe) {
+        turnBanner.textContent = `⭐ It's Your Turn! Call a number (${data.timeLeft}s)`;
+        turnBanner.classList.add('your-turn');
+      } else {
+        turnBanner.textContent = `It's ${activeName}'s Turn (${data.timeLeft}s)`;
+        turnBanner.classList.remove('your-turn');
+      }
+    }
+    playTickSound(data.timeLeft <= 8);
+    return;
+  }
+
   // Update progress bar width
   const percentage = (data.timeLeft / currentRoundTime) * 100;
   
@@ -969,11 +1208,20 @@ socket.on('game_over', (data) => {
     announcementHtml += `<span style="color:var(--secondary); display:block; margin-bottom:12px; font-size:1.2rem;">💔 ${data.message}</span>`;
   }
   
-  if (data.finalScores.length > 0) {
-    const winner = data.finalScores[0];
-    announcementHtml += `🏆 ${winner.username} wins the match with ${winner.score} correct answers!`;
+  if (selectedGameType === 'bingo') {
+    if (data.finalScores.length > 0) {
+      const winner = data.finalScores[0];
+      announcementHtml += `🏆 ${winner.username} completed 5 lines!`;
+    } else {
+      announcementHtml += "No players in the game.";
+    }
   } else {
-    announcementHtml += "No players in the game.";
+    if (data.finalScores.length > 0) {
+      const winner = data.finalScores[0];
+      announcementHtml += `🏆 ${winner.username} wins the match with ${winner.score} correct answers!`;
+    } else {
+      announcementHtml += "No players in the game.";
+    }
   }
   winnerAnnouncementText.innerHTML = announcementHtml;
   
@@ -981,12 +1229,13 @@ socket.on('game_over', (data) => {
   finalPlayersList.innerHTML = '';
   data.finalScores.forEach((p, idx) => {
     const li = document.createElement('li');
+    const unitText = selectedGameType === 'bingo' ? 'Lines' : 'Correct';
     li.innerHTML = `
       <div>
         <span class="rank-badge">${idx + 1}</span>
         <span>${p.username}</span>
       </div>
-      <span class="final-score-points">${p.score} Correct</span>
+      <span class="final-score-points">${p.score} ${unitText}</span>
     `;
     finalPlayersList.appendChild(li);
   });
@@ -998,6 +1247,11 @@ socket.on('chat_message', (data) => {
   appendChatMessage(lobbyChatBox, data.sender, data.message, data.system);
   // Append to game chat
   appendChatMessage(gameChatBox, data.sender, data.message, data.system);
+  // Append to bingo game chat
+  const bingoChatBox = document.getElementById('bingo-chat-box');
+  if (bingoChatBox) {
+    appendChatMessage(bingoChatBox, data.sender, data.message, data.system);
+  }
 });
 
 // --- JKLM Style Circular Ring Layout Calculations ---
@@ -1109,5 +1363,260 @@ function getAvatarColor(username) {
   const index = Math.abs(hash % colors.length);
   return colors[index];
 }
+
+// -------------------------------------------------------------
+// BINGO HELPER FUNCTIONS
+// -------------------------------------------------------------
+
+function renderBingoSetupGrid() {
+  const gridEl = document.getElementById('bingo-setup-grid');
+  if (!gridEl) return;
+  gridEl.innerHTML = '';
+  
+  for (let i = 0; i < 25; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'bingo-cell';
+    cell.dataset.index = i;
+    
+    const value = bingoSetupBoard[i];
+    if (value !== null) {
+      cell.textContent = value;
+      cell.classList.add('placed');
+    } else {
+      cell.textContent = '';
+      cell.classList.remove('placed');
+    }
+    
+    cell.addEventListener('click', () => {
+      // If cell is already placed, ignore click
+      if (bingoSetupBoard[i] !== null) return;
+      
+      if (bingoNextNumber <= 25) {
+        bingoSetupBoard[i] = bingoNextNumber;
+        bingoNextNumber++;
+        renderBingoSetupGrid();
+        updateSetupStatus();
+        
+        // Play simple click note
+        try {
+          const ctx = getAudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(261.63 * Math.pow(1.059463, bingoNextNumber - 2), ctx.currentTime);
+          gain.gain.setValueAtTime(0.05, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.1);
+        } catch (e) {}
+      }
+    });
+    
+    gridEl.appendChild(cell);
+  }
+}
+
+function updateSetupStatus() {
+  const statusEl = document.getElementById('bingo-setup-status-msg');
+  if (!statusEl) return;
+  
+  const placedCount = bingoSetupBoard.filter(v => v !== null).length;
+  statusEl.textContent = `Progress: ${placedCount} / 25 numbers placed.`;
+  
+  if (placedCount === 25) {
+    statusEl.innerHTML = `<span style="color: var(--success); font-weight: bold;">Board complete! Submitting...</span>`;
+    
+    // Automatically submit board
+    socket.emit('submit_bingo_board', {
+      code: currentRoomCode,
+      board: bingoSetupBoard
+    });
+  }
+}
+
+// Calculate which cell indices are part of completed rows, columns, or diagonals
+function getCompletedCellIndices(board, calledList) {
+  if (!board || board.length !== 25) return [];
+
+  const completedIndices = new Set();
+
+  const checkAndAdd = (indices) => {
+    const isComplete = indices.every(idx => calledList.includes(board[idx]));
+    if (isComplete) {
+      indices.forEach(idx => completedIndices.add(idx));
+    }
+  };
+
+  // Check 5 rows
+  for (let r = 0; r < 5; r++) {
+    const rowIndices = [r*5, r*5+1, r*5+2, r*5+3, r*5+4];
+    checkAndAdd(rowIndices);
+  }
+
+  // Check 5 columns
+  for (let c = 0; c < 5; c++) {
+    const colIndices = [c, c+5, c+10, c+15, c+20];
+    checkAndAdd(colIndices);
+  }
+
+  // Check Diagonal 1 (top-left to bottom-right)
+  const diag1Indices = [0, 6, 12, 18, 24];
+  checkAndAdd(diag1Indices);
+
+  // Check Diagonal 2 (top-right to bottom-left)
+  const diag2Indices = [4, 8, 12, 16, 20];
+  checkAndAdd(diag2Indices);
+
+  return Array.from(completedIndices);
+}
+
+function renderBingoPlayGrid(myBoard, calledList) {
+  const gridEl = document.getElementById('bingo-game-grid');
+  if (!gridEl) return;
+  gridEl.innerHTML = '';
+
+  const isMyTurn = currentTurnPlayerId === socket.id;
+  const completedCells = getCompletedCellIndices(myBoard, calledList);
+
+  for (let i = 0; i < 25; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'bingo-cell play-mode';
+    const num = myBoard[i] || '';
+    cell.textContent = num;
+
+    const isCalled = calledList.includes(num);
+    const isLineCompleted = completedCells.includes(i);
+
+    if (isLineCompleted) {
+      cell.classList.add('called', 'line-completed');
+    } else if (isCalled) {
+      cell.classList.add('called');
+    } else {
+      if (isMyTurn && num !== '') {
+        cell.classList.add('clickable');
+        cell.addEventListener('click', () => {
+          socket.emit('call_bingo_number', {
+            code: currentRoomCode,
+            number: num
+          });
+        });
+      }
+    }
+
+    gridEl.appendChild(cell);
+  }
+}
+
+// Bind Bingo setup action buttons
+const btnBingoRandom = document.getElementById('btn-bingo-random');
+const btnBingoClear = document.getElementById('btn-bingo-clear');
+
+if (btnBingoRandom) {
+  btnBingoRandom.addEventListener('click', () => {
+    const numbers = Array.from({ length: 25 }, (_, i) => i + 1);
+    // Shuffle
+    for (let i = numbers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+    }
+    bingoSetupBoard = numbers;
+    bingoNextNumber = 26;
+    renderBingoSetupGrid();
+    updateSetupStatus();
+    playSuccessSound();
+  });
+}
+
+if (btnBingoClear) {
+  btnBingoClear.addEventListener('click', () => {
+    bingoSetupBoard = Array(25).fill(null);
+    bingoNextNumber = 1;
+    renderBingoSetupGrid();
+    updateSetupStatus();
+    playErrorSound();
+  });
+}
+
+// Bind Bingo chat elements
+const btnBingoSendChat = document.getElementById('btn-bingo-send-chat');
+const bingoChatInput = document.getElementById('bingo-chat-input');
+
+if (btnBingoSendChat && bingoChatInput) {
+  btnBingoSendChat.addEventListener('click', () => handleChatSend(bingoChatInput));
+  bingoChatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleChatSend(bingoChatInput);
+  });
+}
+
+// -------------------------------------------------------------
+// BINGO SOCKET RECEIVERS
+// -------------------------------------------------------------
+
+socket.on('bingo_start_placement', () => {
+  closeAlert(); // Close any active popups/toasts
+  bingoSetupBoard = Array(25).fill(null);
+  bingoNextNumber = 1;
+  
+  // Enable setup buttons in case they were disabled from a previous round
+  if (btnBingoRandom) btnBingoRandom.disabled = false;
+  if (btnBingoClear) btnBingoClear.disabled = false;
+  
+  const setupInstructions = document.getElementById('bingo-setup-instructions');
+  if (setupInstructions) {
+    setupInstructions.textContent = 'Tap the empty squares below to place numbers 1 to 25. First square gets 1, then 2, etc.';
+  }
+
+  showScreen('bingoSetup');
+  renderBingoSetupGrid();
+  updateSetupStatus();
+  
+  document.getElementById('bingo-setup-waiting-list').style.display = 'block';
+});
+
+socket.on('bingo_board_accepted', () => {
+  if (btnBingoRandom) btnBingoRandom.disabled = true;
+  if (btnBingoClear) btnBingoClear.disabled = true;
+  
+  const setupInstructions = document.getElementById('bingo-setup-instructions');
+  if (setupInstructions) {
+    setupInstructions.textContent = 'Your board has been submitted successfully! Waiting for other players to finish...';
+  }
+});
+
+socket.on('bingo_game_started', ({ currentTurnPlayerId: turnId }) => {
+  currentTurnPlayerId = turnId;
+  myBingoBoard = [...bingoSetupBoard];
+  calledNumbers = [];
+  previousLinesCount = 0; // Reset tracked completed lines count
+  
+  document.getElementById('bingo-last-called-container').style.display = 'none';
+  document.getElementById('bingo-last-called').textContent = '-';
+  
+  showScreen('bingoGame');
+  renderBingoPlayGrid(myBingoBoard, calledNumbers);
+});
+
+socket.on('bingo_number_called', ({ number, calledNumbers: list }) => {
+  calledNumbers = list;
+  playSuccessSound();
+
+  const banner = document.getElementById('bingo-last-called');
+  const container = document.getElementById('bingo-last-called-container');
+  if (container && banner) {
+    container.style.display = 'flex';
+    banner.textContent = number;
+    banner.classList.add('pulse');
+    setTimeout(() => banner.classList.remove('pulse'), 800);
+  }
+});
+
+socket.on('bingo_round_ended', ({ winnerNames, round, totalRounds }) => {
+  showAlert(
+    'Round Ended 🏁', 
+    `${winnerNames} won Round ${round}! Match length: Best of ${totalRounds}.\n\nPreparing next board in 5 seconds...`
+  );
+});
 
 

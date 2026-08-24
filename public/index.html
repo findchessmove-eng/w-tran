@@ -30,12 +30,29 @@
       <!-- 1. WELCOME/ENTRY SCREEN -->
       <section id="screen-welcome" class="screen active">
         <div class="card glass hero-card">
-          <h1>Hindi to English Word Race!</h1>
-          <p class="subtitle">Create a private room, invite friends, and translate Hindi words to English to win points.</p>
+          <h1>Welcome to Golu Games! 🎮</h1>
+          <p class="subtitle">Choose a game, customize your username, and play in private rooms with friends.</p>
           
+          <!-- Game Selection Section -->
+          <div class="game-select-container">
+            <label class="section-label">Select Game Mode</label>
+            <div class="game-cards">
+              <div class="game-card active" id="select-game-translate" onclick="selectGameType('translate')">
+                <div class="game-card-badge">WORD RACE</div>
+                <div class="game-card-title">Shabd Anuvad 🔤</div>
+                <div class="game-card-desc">Translate Hindi words to English. Fastest correct answer scores!</div>
+              </div>
+              <div class="game-card" id="select-game-bingo" onclick="selectGameType('bingo')">
+                <div class="game-card-badge text-accent">NUMBERS</div>
+                <div class="game-card-title">Bingo 1-25 🔢</div>
+                <div class="game-card-desc">Interactive 5x5 board. Tap squares to place 1-25. Spell B-I-N-G-O!</div>
+              </div>
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="username-input">Enter Your Username</label>
-            <input type="text" id="username-input" placeholder="e.g. TranslatorPro" maxlength="15" autocomplete="off">
+            <input type="text" id="username-input" placeholder="e.g. GameMaster" maxlength="15" autocomplete="off">
           </div>
 
           <div class="actions-row">
@@ -87,31 +104,66 @@
             <!-- Host Settings Panel -->
             <div id="host-settings" class="host-controls">
               <h3>Host Settings</h3>
-              <div class="form-group row">
-                <label for="rounds-select">Total Rounds:</label>
-                <select id="rounds-select" class="select-styled">
-                  <option value="5">5 Rounds</option>
-                  <option value="10" selected>10 Rounds</option>
-                  <option value="15">15 Rounds</option>
-                  <option value="20">20 Rounds</option>
-                </select>
+              
+              <!-- Shabd Anuvad Settings Group -->
+              <div id="translate-settings-group">
+                <div class="form-group row">
+                  <label for="rounds-select">Total Rounds:</label>
+                  <select id="rounds-select" class="select-styled">
+                    <option value="5" selected>Best of 5</option>
+                    <option value="7">Best of 7</option>
+                    <option value="9">Best of 9</option>
+                    <option value="11">Best of 11</option>
+                    <option value="13">Best of 13</option>
+                    <option value="15">Best of 15</option>
+                    <option value="50">50 Rounds</option>
+                    <option value="100">100 Rounds</option>
+                    <option value="220">220 Rounds</option>
+                  </select>
+                </div>
+                <div class="form-group row" style="margin-top: 10px;">
+                  <label for="mode-select">Game Mode:</label>
+                  <select id="mode-select" class="select-styled">
+                    <option value="classic" selected>Classic Race Mode</option>
+                    <option value="survival">Survival Mode (Turn by Turn)</option>
+                  </select>
+                </div>
+                <div class="form-group row" style="margin-top: 10px;">
+                  <label for="timer-select">Round Timer:</label>
+                  <select id="timer-select" class="select-styled">
+                    <option value="20">20 Seconds</option>
+                    <option value="30">30 Seconds</option>
+                    <option value="40" selected>40 Seconds</option>
+                    <option value="60">60 Seconds</option>
+                  </select>
+                </div>
               </div>
-              <div class="form-group row" style="margin-top: 10px;">
-                <label for="mode-select">Game Mode:</label>
-                <select id="mode-select" class="select-styled">
-                  <option value="classic" selected>Classic Race Mode</option>
-                  <option value="survival">Survival Mode (Turn by Turn)</option>
-                </select>
+
+              <!-- Bingo Settings Group -->
+              <div id="bingo-settings-group" style="display: none;">
+                <div class="form-group row">
+                  <label for="bingo-timer-select">Turn Timer:</label>
+                  <select id="bingo-timer-select" class="select-styled">
+                    <option value="0">No Timer (Relaxed)</option>
+                    <option value="15">15 Seconds</option>
+                    <option value="30" selected>30 Seconds</option>
+                    <option value="45">45 Seconds</option>
+                    <option value="60">60 Seconds</option>
+                  </select>
+                </div>
+                <div class="form-group row" style="margin-top: 10px;">
+                  <label for="bingo-rounds-select">Match Length:</label>
+                  <select id="bingo-rounds-select" class="select-styled">
+                    <option value="5" selected>Best of 5</option>
+                    <option value="7">Best of 7</option>
+                    <option value="9">Best of 9</option>
+                    <option value="11">Best of 11</option>
+                    <option value="13">Best of 13</option>
+                    <option value="15">Best of 15</option>
+                  </select>
+                </div>
               </div>
-              <div class="form-group row" style="margin-top: 10px;">
-                <label for="timer-select">Round Timer:</label>
-                <select id="timer-select" class="select-styled">
-                  <option value="20">20 Seconds</option>
-                  <option value="30">30 Seconds</option>
-                  <option value="40" selected>40 Seconds</option>
-                  <option value="60">60 Seconds</option>
-                </select>
-              </div>
+
               <button id="btn-start-game" class="btn btn-primary btn-glow btn-block" style="margin-top: 15px;">Start Match 🚀</button>
             </div>
 
@@ -226,6 +278,104 @@
               <div class="chat-input-row">
                 <input type="text" id="game-chat-input" placeholder="Type message..." maxlength="100" autocomplete="off">
                 <button id="btn-game-send-chat" class="btn btn-accent">Send</button>
+              </div>
+            </div>
+          </div>
+      </section>
+
+      <!-- BINGO BOARD SETUP SCREEN -->
+      <section id="screen-bingo-setup" class="screen">
+        <div class="card glass bingo-setup-card">
+          <h2>Create Your Bingo Board 🔢</h2>
+          <p class="subtitle" id="bingo-setup-instructions">Tap the empty squares below to place numbers 1 to 25. First square gets 1, then 2, etc.</p>
+          
+          <div class="bingo-grid-wrapper">
+            <div id="bingo-setup-grid" class="bingo-board-grid">
+              <!-- Dynamically populated (25 empty cells) -->
+            </div>
+          </div>
+
+          <div class="bingo-setup-status" id="bingo-setup-status-msg">
+            Progress: 0 / 25 numbers placed.
+          </div>
+
+          <div class="actions-row-centered">
+            <button id="btn-bingo-random" class="btn btn-secondary">
+              <span class="btn-text">Randomize Board 🎲</span>
+            </button>
+            <button id="btn-bingo-clear" class="btn btn-warning">
+              <span class="btn-text">Clear Board 🧹</span>
+            </button>
+          </div>
+
+          <div id="bingo-setup-waiting-list" class="waiting-players-list" style="display: none;">
+            <h3>Waiting for other players...</h3>
+            <div class="waiting-players-status" id="bingo-players-ready-status">
+              <!-- Filled dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BINGO GAMEPLAY SCREEN -->
+      <section id="screen-bingo-game" class="screen">
+        <div class="game-grid">
+          <!-- Main play area -->
+          <div class="game-main-area">
+            <div class="card glass play-card">
+              <!-- BINGO Header Tracker (Neons lighting up) -->
+              <div class="bingo-letters-container">
+                <span class="bingo-letter" data-letter="B">B</span>
+                <span class="bingo-letter" data-letter="I">I</span>
+                <span class="bingo-letter" data-letter="N">N</span>
+                <span class="bingo-letter" data-letter="G">G</span>
+                <span class="bingo-letter" data-letter="O">O</span>
+              </div>
+
+              <!-- Active Turn Banner -->
+              <div id="bingo-turn-banner" class="turn-banner">
+                Waiting for game state...
+              </div>
+
+              <!-- Bingo Board Grid -->
+              <div class="bingo-grid-wrapper">
+                <div id="bingo-game-grid" class="bingo-board-grid play-mode">
+                  <!-- Generated dynamically (25 cells) -->
+                </div>
+              </div>
+
+              <div class="bingo-game-stats">
+                <div class="stats-item">
+                  <span class="stats-label">My Completed Lines:</span>
+                  <span class="stats-value" id="bingo-my-lines">0 / 5</span>
+                </div>
+                <div class="stats-item" id="bingo-last-called-container" style="display: none;">
+                  <span class="stats-label">Last Called:</span>
+                  <span class="stats-value highlighted" id="bingo-last-called">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scoreboard & Chat Panel -->
+          <div class="game-sidebar">
+            <!-- Scoreboard Card -->
+            <div class="card glass game-scores-card">
+              <h3>Line Scoreboard</h3>
+              <ul id="bingo-players-list" class="players-score-list">
+                <!-- Dynamically populated -->
+              </ul>
+            </div>
+
+            <!-- In-game Chat Card -->
+            <div class="card glass game-chat-card">
+              <h3>Live Chat</h3>
+              <div id="bingo-chat-box" class="chat-messages">
+                <!-- Dynamically populated -->
+              </div>
+              <div class="chat-input-row">
+                <input type="text" id="bingo-chat-input" placeholder="Type message..." maxlength="100" autocomplete="off">
+                <button id="btn-bingo-send-chat" class="btn btn-accent">Send</button>
               </div>
             </div>
           </div>
