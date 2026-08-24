@@ -620,6 +620,7 @@ btnBackHome.addEventListener('click', () => {
   myBingoBoard = [];
   calledNumbers = [];
   currentTurnPlayerId = null;
+  document.body.classList.remove('bingo-my-turn-active');
   const bingoChatBox = document.getElementById('bingo-chat-box');
   if (bingoChatBox) bingoChatBox.innerHTML = '';
   
@@ -754,9 +755,11 @@ socket.on('room_update', (data) => {
       if (isMyTurn) {
         turnBanner.textContent = `⭐ It's Your Turn! Call a number.`;
         turnBanner.classList.add('your-turn');
+        document.body.classList.add('bingo-my-turn-active');
       } else {
         turnBanner.textContent = `It's ${activeName}'s Turn.`;
         turnBanner.classList.remove('your-turn');
+        document.body.classList.remove('bingo-my-turn-active');
       }
 
       // Draw scoreboard
@@ -1580,6 +1583,15 @@ const btnBingoClear = document.getElementById('btn-bingo-clear');
 
 if (btnBingoRandom) {
   btnBingoRandom.addEventListener('click', () => {
+    // Crucial for iOS/iPad: Initialize and resume AudioContext inside user interaction block synchronously
+    let ctx = null;
+    try {
+      ctx = getAudioContext();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume();
+      }
+    } catch (err) {}
+
     // Clear any active randomize animation
     if (randomizeInterval) clearInterval(randomizeInterval);
     
@@ -1630,21 +1642,22 @@ if (btnBingoRandom) {
       bingoSetupBoard[cellIdx] = num;
       renderBingoSetupGrid();
 
-      // Play snappy ascending synthesizer note on each cell fill
-      try {
-        const ctx = getAudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        const freq = 320 + step * 16; // ascending frequency
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        gain.gain.setValueAtTime(0.04, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.08);
-      } catch (e) {}
+      // Play snappy ascending note using the pre-fetched context
+      if (ctx && ctx.state !== 'suspended') {
+        try {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          const freq = 320 + step * 16; // ascending frequency
+          osc.frequency.setValueAtTime(freq, ctx.currentTime);
+          gain.gain.setValueAtTime(0.04, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.08);
+        } catch (e) {}
+      }
 
       step++;
     }, 45); // ~1.1s total duration
