@@ -2044,7 +2044,481 @@ body.flash-red-active {
 @keyframes bodyFlashRed {
   0% { background: #ef4444 !important; background-color: #ef4444 !important; }
   40% { background: #dc2626 !important; background-color: #dc2626 !important; }
-  100% { }
+/* -------------------------------------------------------------
+   AVATAR SELECTION STYLING
+   ------------------------------------------------------------- */
+.avatar-select-section {
+  margin-bottom: 20px;
+  text-align: left;
 }
+
+.avatar-current-preview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #ffffff;
+  border: 1.5px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.avatar-preview-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e0e7ff 0%, #fae8ff 100%);
+  border: 2px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+  user-select: none;
+  animation: avatarPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes avatarPop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.avatar-preview-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.avatar-preview-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.avatar-preview-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.avatar-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+  gap: 8px;
+  max-height: 140px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+
+.avatar-option-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1.5px solid var(--glass-border);
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.avatar-option-btn:hover {
+  transform: scale(1.18);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+  z-index: 2;
+}
+
+.avatar-option-btn.selected {
+  background: #e0e7ff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary);
+  transform: scale(1.1);
+}
+
+/* Avatar badge in lists and scoreboard */
+.player-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e0e7ff 0%, #fae8ff 100%);
+  border: 1px solid var(--glass-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  margin-right: 6px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* -------------------------------------------------------------
+   REAL-LIFE BINGO CALLER & BALL SHOWCASE
+   ------------------------------------------------------------- */
+.bingo-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.voice-toggle-btn {
+  font-size: 0.8rem;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.bingo-caller-showcase {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 2px solid #334155;
+  border-radius: 16px;
+  padding: 12px 18px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  color: #ffffff;
+}
+
+.bingo-ball-stage {
+  flex-shrink: 0;
+}
+
+.bingo-drawn-ball {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ef4444 0%, #991b1b 75%, #450a0a 100%);
+  border: 2px solid #fecaca;
+  box-shadow: inset -4px -4px 8px rgba(0,0,0,0.6), inset 4px 4px 8px rgba(255,255,255,0.6), 0 6px 16px rgba(239, 68, 68, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 900;
+  user-select: none;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bingo-drawn-ball.drawn-pop {
+  animation: ballDropBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes ballDropBounce {
+  0% { transform: translateY(-40px) scale(0.4) rotate(-30deg); opacity: 0; }
+  60% { transform: translateY(8px) scale(1.15) rotate(10deg); opacity: 1; }
+  80% { transform: translateY(-4px) scale(0.95); }
+  100% { transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+.bingo-drawn-ball .ball-letter {
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.bingo-drawn-ball .ball-number {
+  font-size: 1.6rem;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+.caller-announcement {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 2px;
+}
+
+.caller-tag {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #38bdf8;
+  text-transform: uppercase;
+}
+
+.caller-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+/* -------------------------------------------------------------
+   MASTER CALLED BOARD (1 TO 25 TRAY)
+   ------------------------------------------------------------- */
+.master-board-section {
+  background: #ffffff;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  margin-top: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.master-board-header {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  background: #f8fafc;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.master-board-header:hover {
+  background: #f1f5f9;
+}
+
+.master-toggle-btn {
+  font-size: 0.75rem;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.master-board-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.master-ball-badge {
+  padding: 6px 2px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.master-ball-badge.called {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+  transform: scale(1.04);
+}
+
+.master-ball-badge.latest {
+  background: #ea580c !important;
+  border-color: #c2410c !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 8px rgba(234, 88, 12, 0.5) !important;
+}
+
+/* -------------------------------------------------------------
+   BINGO ROUND RESULT MODAL (LIST-WISE WINNERS WITH AVATARS)
+   ------------------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  animation: fadeInModal 0.25s ease-out;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.bingo-round-modal-card {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--primary);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--primary);
+  background: #e0e7ff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.bingo-round-modal-card h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--text-main);
+}
+
+.round-winners-box {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1.5px solid #86efac;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.box-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.round-winners-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.round-winner-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.08);
+}
+
+.winner-user-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.winner-badge {
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.series-standings-box {
+  background: #f8fafc;
+  border: 1.5px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.standings-table-wrapper {
+  overflow-x: auto;
+}
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.standings-table th {
+  text-align: left;
+  padding: 6px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  border-bottom: 1.5px solid #e2e8f0;
+}
+
+.standings-table td {
+  padding: 8px;
+  border-bottom: 1px solid #f1f5f9;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.standings-user-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.round-countdown-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.countdown-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.countdown-bar-wrapper {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.countdown-bar-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+  transition: width 5s linear;
+}
+
+/* -------------------------------------------------------------
+   HOST GAMEOVER BUTTONS & ACTIONS
+   ------------------------------------------------------------- */
+.host-gameover-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.guest-gameover-msg {
+  margin-top: 14px;
+  font-size: 0.9rem;
+}
+
 
 

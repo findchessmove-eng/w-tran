@@ -96,7 +96,8 @@ module.exports = [
     "hindi": "सोचना (Sochna)",
     "english": [
       "think",
-      "consider"
+      "consider",
+      "ponder"
     ]
   },
   {
@@ -284,7 +285,8 @@ module.exports = [
     "hindi": "लड़ना (Ladna)",
     "english": [
       "fight",
-      "battle"
+      "battle",
+      "quarrel"
     ]
   },
   {
@@ -367,7 +369,8 @@ module.exports = [
     "english": [
       "climb",
       "board",
-      "mount"
+      "mount",
+      "ascend"
     ]
   },
   {
@@ -1448,14 +1451,17 @@ module.exports = [
   {
     "hindi": "जूता (Joota)",
     "english": [
-      "shoe"
+      "shoe",
+      "shoes"
     ]
   },
   {
     "hindi": "चप्पल (Chappal)",
     "english": [
       "slipper",
-      "sandal"
+      "sandal",
+      "slippers",
+      "sandals"
     ]
   },
   {
@@ -1614,14 +1620,16 @@ module.exports = [
     "hindi": "सड़क (Sadak)",
     "english": [
       "road",
-      "street"
+      "street",
+      "highway"
     ]
   },
   {
     "hindi": "गली (Gali)",
     "english": [
       "lane",
-      "alley"
+      "alley",
+      "street"
     ]
   },
   {
@@ -1718,7 +1726,8 @@ module.exports = [
   {
     "hindi": "तालाब (Talaab)",
     "english": [
-      "pond"
+      "pond",
+      "pool"
     ]
   },
   {
@@ -1816,7 +1825,8 @@ module.exports = [
   {
     "hindi": "पत्ता (Patta)",
     "english": [
-      "leaf"
+      "leaf",
+      "card"
     ]
   },
   {
@@ -1842,7 +1852,8 @@ module.exports = [
     "hindi": "लकड़ी (Lakdi)",
     "english": [
       "wood",
-      "stick"
+      "stick",
+      "timber"
     ]
   },
   {
@@ -1855,7 +1866,8 @@ module.exports = [
     "hindi": "हवा (Hawa)",
     "english": [
       "air",
-      "wind"
+      "wind",
+      "breeze"
     ]
   },
   {
@@ -2307,7 +2319,9 @@ module.exports = [
   {
     "hindi": "भेद (Bhed)",
     "english": [
-      "sheep"
+      "sheep",
+      "secret",
+      "difference"
     ]
   },
   {
@@ -2368,7 +2382,8 @@ module.exports = [
   {
     "hindi": "खरगोश (Khargosh)",
     "english": [
-      "rabbit"
+      "rabbit",
+      "hare"
     ]
   },
   {
@@ -2405,7 +2420,8 @@ module.exports = [
   {
     "hindi": "कबूतर (Kabootar)",
     "english": [
-      "pigeon"
+      "pigeon",
+      "dove"
     ]
   },
   {
@@ -2442,7 +2458,8 @@ module.exports = [
   {
     "hindi": "हंस (Hans)",
     "english": [
-      "swan"
+      "swan",
+      "goose"
     ]
   },
   {
@@ -2901,7 +2918,9 @@ module.exports = [
   {
     "hindi": "परसों (Parson)",
     "english": [
-      "day before/after tomorrow"
+      "day before/after tomorrow",
+      "day before yesterday",
+      "day after tomorrow"
     ]
   },
   {
@@ -3064,14 +3083,17 @@ module.exports = [
     "hindi": "कुछ (Kuchh)",
     "english": [
       "something",
-      "some"
+      "some",
+      "few"
     ]
   },
   {
     "hindi": "कोई (Koi)",
     "english": [
       "someone",
-      "anyone"
+      "anyone",
+      "somebody",
+      "anybody"
     ]
   },
   {
@@ -3130,7 +3152,8 @@ module.exports = [
     "hindi": "सुन्दर (Sundar)",
     "english": [
       "beautiful",
-      "pretty"
+      "pretty",
+      "handsome"
     ]
   },
   {
@@ -3153,14 +3176,16 @@ module.exports = [
     "english": [
       "fast",
       "sharp",
-      "intense"
+      "intense",
+      "quick"
     ]
   },
   {
     "hindi": "धीमा (Dheema)",
     "english": [
       "slow",
-      "gentle"
+      "gentle",
+      "gradual"
     ]
   },
   {
@@ -3174,7 +3199,8 @@ module.exports = [
     "hindi": "छोटा (Chhota)",
     "english": [
       "small",
-      "short"
+      "short",
+      "little"
     ]
   },
   {
@@ -3188,7 +3214,8 @@ module.exports = [
     "hindi": "पतला (Patla)",
     "english": [
       "thin",
-      "slim"
+      "slim",
+      "narrow"
     ]
   },
   {
@@ -3268,7 +3295,8 @@ module.exports = [
     "hindi": "तीखा (Teekha)",
     "english": [
       "spicy",
-      "sharp"
+      "sharp",
+      "hot"
     ]
   },
   {
@@ -3335,14 +3363,16 @@ module.exports = [
     "hindi": "सच्चा (Sachcha)",
     "english": [
       "true",
-      "genuine"
+      "genuine",
+      "real"
     ]
   },
   {
     "hindi": "झूठा (Jhootha)",
     "english": [
       "false",
-      "liar"
+      "liar",
+      "untrue"
     ]
   },
   {
@@ -3549,7 +3579,8 @@ module.exports = [
   {
     "hindi": "बैंगनी (Baingani)",
     "english": [
-      "purple"
+      "purple",
+      "violet"
     ]
   },
   {
@@ -3688,7 +3719,8 @@ module.exports = [
   {
     "hindi": "आँख (Aankh)",
     "english": [
-      "eye"
+      "eye",
+      "eyes"
     ]
   },
   {
@@ -3700,7 +3732,8 @@ module.exports = [
   {
     "hindi": "कान (Kaan)",
     "english": [
-      "ear"
+      "ear",
+      "ears"
     ]
   },
   {
@@ -3713,7 +3746,8 @@ module.exports = [
   {
     "hindi": "होंठ (Honth)",
     "english": [
-      "lips"
+      "lips",
+      "lip"
     ]
   },
   {
@@ -3816,7 +3850,8 @@ module.exports = [
   {
     "hindi": "हड्डी (Haddi)",
     "english": [
-      "bone"
+      "bone",
+      "bones"
     ]
   },
   {
@@ -4085,7 +4120,8 @@ module.exports = [
     "hindi": "ग्राहक (Grahak)",
     "english": [
       "customer",
-      "client"
+      "client",
+      "buyer"
     ]
   },
   {
@@ -4202,7 +4238,8 @@ module.exports = [
     "hindi": "खबर (Khabar)",
     "english": [
       "news",
-      "information"
+      "information",
+      "report"
     ]
   },
   {
@@ -4216,12 +4253,6 @@ module.exports = [
     "english": [
       "magazine",
       "journal"
-    ]
-  },
-  {
-    "hindi": "किताब (Kitaab)",
-    "english": [
-      "book"
     ]
   },
   {
@@ -4394,12 +4425,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "कमरा (Kamra)",
-    "english": [
-      "room"
-    ]
-  },
-  {
     "hindi": "बुकिंग (Booking)",
     "english": [
       "reservation",
@@ -4414,13 +4439,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "समुन्दर (Samundar)",
-    "english": [
-      "sea",
-      "ocean"
-    ]
-  },
-  {
     "hindi": "किनारा (Kinaara)",
     "english": [
       "shore",
@@ -4432,13 +4450,6 @@ module.exports = [
     "hindi": "पल (Pul)",
     "english": [
       "bridge"
-    ]
-  },
-  {
-    "hindi": "सड़क (Sadak)",
-    "english": [
-      "road",
-      "street"
     ]
   },
   {
@@ -4466,12 +4477,6 @@ module.exports = [
     "hindi": "ट्रैफिक (Traffic)",
     "english": [
       "traffic"
-    ]
-  },
-  {
-    "hindi": "पुलिस (Police)",
-    "english": [
-      "police"
     ]
   },
   {
@@ -4531,12 +4536,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "ड्राइवर (Driver)",
-    "english": [
-      "driver"
-    ]
-  },
-  {
     "hindi": "सवारी (Sawari)",
     "english": [
       "passenger",
@@ -4563,12 +4562,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "साइकिल (Cycle)",
-    "english": [
-      "bicycle"
-    ]
-  },
-  {
     "hindi": "सवाल (Sawal)",
     "english": [
       "question",
@@ -4576,38 +4569,10 @@ module.exports = [
     ]
   },
   {
-    "hindi": "जवाब (Jawaab)",
-    "english": [
-      "answer",
-      "reply"
-    ]
-  },
-  {
     "hindi": "सच्चाई (Sachchai)",
     "english": [
       "truth",
       "honesty"
-    ]
-  },
-  {
-    "hindi": "झूठ (Jhooth)",
-    "english": [
-      "lie",
-      "falsehood"
-    ]
-  },
-  {
-    "hindi": "कहानी (Kahani)",
-    "english": [
-      "story",
-      "tale"
-    ]
-  },
-  {
-    "hindi": "खबर (Khabar)",
-    "english": [
-      "news",
-      "report"
     ]
   },
   {
@@ -4686,20 +4651,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "कोशिश (Koshish)",
-    "english": [
-      "effort",
-      "attempt"
-    ]
-  },
-  {
-    "hindi": "फैसला (Faisla)",
-    "english": [
-      "decision",
-      "verdict"
-    ]
-  },
-  {
     "hindi": "विचार (Vichaar)",
     "english": [
       "thought",
@@ -4729,40 +4680,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "शक (Shak)",
-    "english": [
-      "doubt",
-      "suspicion"
-    ]
-  },
-  {
-    "hindi": "राज़ (Raaz)",
-    "english": [
-      "secret",
-      "mystery"
-    ]
-  },
-  {
-    "hindi": "भेद (Bhed)",
-    "english": [
-      "secret",
-      "difference"
-    ]
-  },
-  {
-    "hindi": "सच (Sach)",
-    "english": [
-      "truth"
-    ]
-  },
-  {
-    "hindi": "झूठ (Jhooth)",
-    "english": [
-      "lie",
-      "falsehood"
-    ]
-  },
-  {
     "hindi": "गलती (Galti)",
     "english": [
       "mistake",
@@ -4784,34 +4701,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "जीत (Jeet)",
-    "english": [
-      "victory",
-      "win"
-    ]
-  },
-  {
-    "hindi": "हार (Haar)",
-    "english": [
-      "defeat",
-      "loss"
-    ]
-  },
-  {
-    "hindi": "मौका (Mauka)",
-    "english": [
-      "opportunity",
-      "chance"
-    ]
-  },
-  {
-    "hindi": "खतरा (Khatra)",
-    "english": [
-      "danger",
-      "risk"
-    ]
-  },
-  {
     "hindi": "हिफाज़त (Hifazat)",
     "english": [
       "protection",
@@ -4823,13 +4712,6 @@ module.exports = [
     "english": [
       "security",
       "protection"
-    ]
-  },
-  {
-    "hindi": "आज़ादी (Azaadi)",
-    "english": [
-      "freedom",
-      "independence"
     ]
   },
   {
@@ -4878,12 +4760,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "चोर (Chor)",
-    "english": [
-      "thief"
-    ]
-  },
-  {
     "hindi": "सजा (Saza)",
     "english": [
       "punishment",
@@ -4900,21 +4776,8 @@ module.exports = [
   {
     "hindi": "अदालत (Adalat)",
     "english": [
-      "court"
-    ]
-  },
-  {
-    "hindi": "जज (Judge)",
-    "english": [
-      "judge",
-      "magistrate"
-    ]
-  },
-  {
-    "hindi": "वकील (Vakil)",
-    "english": [
-      "lawyer",
-      "advocate"
+      "court",
+      "courtroom"
     ]
   },
   {
@@ -4931,13 +4794,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "फैसला (Faisla)",
-    "english": [
-      "decision",
-      "verdict"
-    ]
-  },
-  {
     "hindi": "हुकूमत (Hukumat)",
     "english": [
       "government",
@@ -4951,36 +4807,10 @@ module.exports = [
     ]
   },
   {
-    "hindi": "देश (Desh)",
-    "english": [
-      "country",
-      "nation"
-    ]
-  },
-  {
-    "hindi": "शहर (Shehar)",
-    "english": [
-      "city",
-      "town"
-    ]
-  },
-  {
-    "hindi": "गाओं (Gaon)",
-    "english": [
-      "village"
-    ]
-  },
-  {
     "hindi": "समाज (Samaj)",
     "english": [
       "society",
       "community"
-    ]
-  },
-  {
-    "hindi": "आसमान (Aasmaan)",
-    "english": [
-      "sky"
     ]
   },
   {
@@ -5008,69 +4838,15 @@ module.exports = [
     ]
   },
   {
-    "hindi": "रौशनी (Roshni)",
-    "english": [
-      "light",
-      "brightness"
-    ]
-  },
-  {
-    "hindi": "अँधेरा (Andhera)",
-    "english": [
-      "darkness",
-      "dark"
-    ]
-  },
-  {
-    "hindi": "बदल (Badal)",
-    "english": [
-      "cloud"
-    ]
-  },
-  {
-    "hindi": "बारिश (Baarish)",
-    "english": [
-      "rain"
-    ]
-  },
-  {
     "hindi": "बूँद (Boond)",
     "english": [
       "drop"
     ]
   },
   {
-    "hindi": "नदी (Nadi)",
-    "english": [
-      "river"
-    ]
-  },
-  {
     "hindi": "लहर (Lehar)",
     "english": [
       "wave"
-    ]
-  },
-  {
-    "hindi": "समुन्दर (Samundar)",
-    "english": [
-      "sea",
-      "ocean"
-    ]
-  },
-  {
-    "hindi": "किनारा (Kinaara)",
-    "english": [
-      "shore",
-      "edge",
-      "bank"
-    ]
-  },
-  {
-    "hindi": "पहाड़ (Pahaad)",
-    "english": [
-      "mountain",
-      "hill"
     ]
   },
   {
@@ -5087,86 +4863,15 @@ module.exports = [
     ]
   },
   {
-    "hindi": "जंगल (Jungle)",
-    "english": [
-      "forest",
-      "jungle"
-    ]
-  },
-  {
-    "hindi": "पेड़ (Ped)",
-    "english": [
-      "tree"
-    ]
-  },
-  {
-    "hindi": "फूल (Phool)",
-    "english": [
-      "flower"
-    ]
-  },
-  {
     "hindi": "काली (Kali)",
     "english": [
       "bud"
     ]
   },
   {
-    "hindi": "पत्ता (Patta)",
-    "english": [
-      "leaf"
-    ]
-  },
-  {
-    "hindi": "तना (Tana)",
-    "english": [
-      "trunk",
-      "stem"
-    ]
-  },
-  {
     "hindi": "जड़ (Jad)",
     "english": [
       "root"
-    ]
-  },
-  {
-    "hindi": "बीज (Beej)",
-    "english": [
-      "seed"
-    ]
-  },
-  {
-    "hindi": "मिटटी (Mitti)",
-    "english": [
-      "soil",
-      "dirt",
-      "earth"
-    ]
-  },
-  {
-    "hindi": "रेट (Ret)",
-    "english": [
-      "sand"
-    ]
-  },
-  {
-    "hindi": "हवा (Hawa)",
-    "english": [
-      "air",
-      "wind"
-    ]
-  },
-  {
-    "hindi": "आग (Aag)",
-    "english": [
-      "fire"
-    ]
-  },
-  {
-    "hindi": "धुंआ (Dhuaan)",
-    "english": [
-      "smoke"
     ]
   },
   {
@@ -5189,13 +4894,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "बिजली (Bijli)",
-    "english": [
-      "electricity",
-      "lightning"
-    ]
-  },
-  {
     "hindi": "गरज (Garaj)",
     "english": [
       "thunder",
@@ -5207,26 +4905,6 @@ module.exports = [
     "english": [
       "flash",
       "shine"
-    ]
-  },
-  {
-    "hindi": "तूफ़ान (Toofan)",
-    "english": [
-      "storm"
-    ]
-  },
-  {
-    "hindi": "अंधी (Andhi)",
-    "english": [
-      "dust storm",
-      "gale"
-    ]
-  },
-  {
-    "hindi": "मौसम (Mausam)",
-    "english": [
-      "weather",
-      "season"
     ]
   },
   {
@@ -5256,7 +4934,8 @@ module.exports = [
   {
     "hindi": "घंटा (Ghanta)",
     "english": [
-      "hour"
+      "hour",
+      "bell"
     ]
   },
   {
@@ -5333,19 +5012,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "कल (Kal)",
-    "english": [
-      "yesterday",
-      "tomorrow"
-    ]
-  },
-  {
-    "hindi": "आज (Aaj)",
-    "english": [
-      "today"
-    ]
-  },
-  {
     "hindi": "भविष्य (Bhavishya)",
     "english": [
       "future"
@@ -5383,13 +5049,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "मौका (Mauka)",
-    "english": [
-      "opportunity",
-      "chance"
-    ]
-  },
-  {
     "hindi": "इंतज़ार (Intezaar)",
     "english": [
       "wait",
@@ -5397,38 +5056,10 @@ module.exports = [
     ]
   },
   {
-    "hindi": "देर (Der)",
-    "english": [
-      "late",
-      "delay"
-    ]
-  },
-  {
-    "hindi": "जल्दी (Jaldi)",
-    "english": [
-      "quickly",
-      "early"
-    ]
-  },
-  {
     "hindi": "रोज़ (Roz)",
     "english": [
       "daily",
       "day"
-    ]
-  },
-  {
-    "hindi": "कभी (Kabhi)",
-    "english": [
-      "ever",
-      "sometimes"
-    ]
-  },
-  {
-    "hindi": "प्यार (Pyaar)",
-    "english": [
-      "love",
-      "affection"
     ]
   },
   {
@@ -5446,23 +5077,10 @@ module.exports = [
     ]
   },
   {
-    "hindi": "दोस्ती (Dosti)",
-    "english": [
-      "friendship"
-    ]
-  },
-  {
     "hindi": "यारी (Yaari)",
     "english": [
       "friendship",
       "companionship"
-    ]
-  },
-  {
-    "hindi": "रिश्ता (Rishta)",
-    "english": [
-      "relationship",
-      "relation"
     ]
   },
   {
@@ -5479,37 +5097,10 @@ module.exports = [
     ]
   },
   {
-    "hindi": "याद (Yaad)",
-    "english": [
-      "memory",
-      "remembrance"
-    ]
-  },
-  {
-    "hindi": "इंतज़ार (Intezaar)",
-    "english": [
-      "wait",
-      "waiting"
-    ]
-  },
-  {
-    "hindi": "सपना (Sapna)",
-    "english": [
-      "dream"
-    ]
-  },
-  {
     "hindi": "ख्वाब (Khwaab)",
     "english": [
       "dream",
       "vision"
-    ]
-  },
-  {
-    "hindi": "तमन्ना (Tamanna)",
-    "english": [
-      "desire",
-      "wish"
     ]
   },
   {
@@ -5518,19 +5109,6 @@ module.exports = [
       "desire",
       "wish",
       "ambition"
-    ]
-  },
-  {
-    "hindi": "उम्मीद (Umeed)",
-    "english": [
-      "hope"
-    ]
-  },
-  {
-    "hindi": "भरोसा (Bharosa)",
-    "english": [
-      "trust",
-      "reliance"
     ]
   },
   {
@@ -5555,60 +5133,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "वादा (Vaada)",
-    "english": [
-      "promise"
-    ]
-  },
-  {
-    "hindi": "कसम (Kasam)",
-    "english": [
-      "oath",
-      "swear"
-    ]
-  },
-  {
-    "hindi": "मुस्कान (Muskaan)",
-    "english": [
-      "smile"
-    ]
-  },
-  {
-    "hindi": "आंसू (Aansu)",
-    "english": [
-      "tear"
-    ]
-  },
-  {
-    "hindi": "ख़ुशी (Khushi)",
-    "english": [
-      "happiness",
-      "joy"
-    ]
-  },
-  {
-    "hindi": "ग़म (Gham)",
-    "english": [
-      "sorrow",
-      "grief"
-    ]
-  },
-  {
-    "hindi": "दर्द (Dard)",
-    "english": [
-      "pain",
-      "ache"
-    ]
-  },
-  {
-    "hindi": "सुकून (Sukoon)",
-    "english": [
-      "peace",
-      "relief",
-      "tranquility"
-    ]
-  },
-  {
     "hindi": "तन्हाई (Tanhai)",
     "english": [
       "loneliness",
@@ -5623,31 +5147,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "दिल (Dil)",
-    "english": [
-      "heart"
-    ]
-  },
-  {
-    "hindi": "ज़िन्दगी (Zindagi)",
-    "english": [
-      "life"
-    ]
-  },
-  {
-    "hindi": "दुनिया (Duniya)",
-    "english": [
-      "world"
-    ]
-  },
-  {
-    "hindi": "कहानी (Kahani)",
-    "english": [
-      "story",
-      "tale"
-    ]
-  },
-  {
     "hindi": "किरदार (Kirdaar)",
     "english": [
       "character",
@@ -5655,42 +5154,9 @@ module.exports = [
     ]
   },
   {
-    "hindi": "चेहरा (Chehra)",
-    "english": [
-      "face"
-    ]
-  },
-  {
-    "hindi": "तस्वीर (Tasveer)",
-    "english": [
-      "picture",
-      "image",
-      "photograph"
-    ]
-  },
-  {
-    "hindi": "आवाज़ (Awaaz)",
-    "english": [
-      "voice",
-      "sound"
-    ]
-  },
-  {
     "hindi": "यादें (Yaadein)",
     "english": [
       "memories"
-    ]
-  },
-  {
-    "hindi": "पल (Pal)",
-    "english": [
-      "moment"
-    ]
-  },
-  {
-    "hindi": "लम्हा (Lamha)",
-    "english": [
-      "moment"
     ]
   },
   {
@@ -5708,58 +5174,10 @@ module.exports = [
     ]
   },
   {
-    "hindi": "ख्याल (Khayal)",
-    "english": [
-      "thought",
-      "care",
-      "idea"
-    ]
-  },
-  {
-    "hindi": "सोच (Soch)",
-    "english": [
-      "thought",
-      "thinking"
-    ]
-  },
-  {
-    "hindi": "सपना (Sapna)",
-    "english": [
-      "dream"
-    ]
-  },
-  {
     "hindi": "हकीकत (Haqeeqat)",
     "english": [
       "reality",
       "truth"
-    ]
-  },
-  {
-    "hindi": "सच (Sach)",
-    "english": [
-      "truth"
-    ]
-  },
-  {
-    "hindi": "झूठ (Jhooth)",
-    "english": [
-      "lie",
-      "falsehood"
-    ]
-  },
-  {
-    "hindi": "राज़ (Raaz)",
-    "english": [
-      "secret",
-      "mystery"
-    ]
-  },
-  {
-    "hindi": "किस्सा (Kissa)",
-    "english": [
-      "story",
-      "incident"
     ]
   },
   {
@@ -5783,12 +5201,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "गीत (Geet)",
-    "english": [
-      "song"
-    ]
-  },
-  {
     "hindi": "शायरी (Shayari)",
     "english": [
       "poetry",
@@ -5803,26 +5215,6 @@ module.exports = [
     ]
   },
   {
-    "hindi": "धुन (Dhun)",
-    "english": [
-      "tune",
-      "melody"
-    ]
-  },
-  {
-    "hindi": "संगीत (Sangeet)",
-    "english": [
-      "music"
-    ]
-  },
-  {
-    "hindi": "आवाज़ (Awaaz)",
-    "english": [
-      "voice",
-      "sound"
-    ]
-  },
-  {
     "hindi": "ख़ामोशी (Khamoshi)",
     "english": [
       "silence"
@@ -5831,14 +5223,8 @@ module.exports = [
   {
     "hindi": "शोर (Shor)",
     "english": [
-      "noise"
-    ]
-  },
-  {
-    "hindi": "चीख (Cheekh)",
-    "english": [
-      "scream",
-      "shriek"
+      "noise",
+      "clamor"
     ]
   },
   {
@@ -5848,63 +5234,10 @@ module.exports = [
     ]
   },
   {
-    "hindi": "रोना (Rona)",
-    "english": [
-      "cry",
-      "weep"
-    ]
-  },
-  {
-    "hindi": "मुस्कान (Muskaan)",
-    "english": [
-      "smile"
-    ]
-  },
-  {
-    "hindi": "आंसू (Aansu)",
-    "english": [
-      "tear"
-    ]
-  },
-  {
-    "hindi": "नज़र (Nazar)",
-    "english": [
-      "gaze",
-      "sight",
-      "glance"
-    ]
-  },
-  {
     "hindi": "पलकें (Palkein)",
     "english": [
       "eyelashes",
       "eyelids"
-    ]
-  },
-  {
-    "hindi": "आइना (Aaina)",
-    "english": [
-      "mirror"
-    ]
-  },
-  {
-    "hindi": "चेहरा (Chehra)",
-    "english": [
-      "face"
-    ]
-  },
-  {
-    "hindi": "हिम्मत (Himmat)",
-    "english": [
-      "courage",
-      "strength"
-    ]
-  },
-  {
-    "hindi": "हौसला (Hausla)",
-    "english": [
-      "courage",
-      "morale"
     ]
   },
   {
@@ -5922,114 +5255,10 @@ module.exports = [
     ]
   },
   {
-    "hindi": "जोश (Josh)",
-    "english": [
-      "enthusiasm",
-      "energy"
-    ]
-  },
-  {
-    "hindi": "म्हणत (Mehnat)",
-    "english": [
-      "hard work",
-      "effort"
-    ]
-  },
-  {
-    "hindi": "कोशिश (Koshish)",
-    "english": [
-      "effort",
-      "attempt"
-    ]
-  },
-  {
-    "hindi": "सफलता (Safalta)",
-    "english": [
-      "success"
-    ]
-  },
-  {
     "hindi": "कामयाबी (Kamyabi)",
     "english": [
       "success",
       "achievement"
-    ]
-  },
-  {
-    "hindi": "हार (Haar)",
-    "english": [
-      "defeat",
-      "loss"
-    ]
-  },
-  {
-    "hindi": "जीत (Jeet)",
-    "english": [
-      "victory",
-      "win"
-    ]
-  },
-  {
-    "hindi": "लक्ष्य (Lakshya)",
-    "english": [
-      "goal",
-      "target"
-    ]
-  },
-  {
-    "hindi": "मंज़िल (Manzil)",
-    "english": [
-      "destination",
-      "goal"
-    ]
-  },
-  {
-    "hindi": "रास्ता (Raasta)",
-    "english": [
-      "way",
-      "road",
-      "path"
-    ]
-  },
-  {
-    "hindi": "सफर (Safar)",
-    "english": [
-      "journey",
-      "travel"
-    ]
-  },
-  {
-    "hindi": "उम्मीद (Umeed)",
-    "english": [
-      "hope"
-    ]
-  },
-  {
-    "hindi": "विश्वास (Vishwas)",
-    "english": [
-      "trust",
-      "faith",
-      "belief"
-    ]
-  },
-  {
-    "hindi": "यकीन (Yakeen)",
-    "english": [
-      "belief",
-      "certainty"
-    ]
-  },
-  {
-    "hindi": "भरोसा (Bharosa)",
-    "english": [
-      "trust",
-      "reliance"
-    ]
-  },
-  {
-    "hindi": "सब्र (Sabr)",
-    "english": [
-      "patience"
     ]
   },
   {
@@ -6051,34 +5280,6 @@ module.exports = [
     "english": [
       "sense",
       "consciousness"
-    ]
-  },
-  {
-    "hindi": "हिम्मत (Himmat)",
-    "english": [
-      "courage",
-      "strength"
-    ]
-  },
-  {
-    "hindi": "दिमाग (Dimaag)",
-    "english": [
-      "brain",
-      "mind"
-    ]
-  },
-  {
-    "hindi": "सोच (Soch)",
-    "english": [
-      "thought",
-      "thinking"
-    ]
-  },
-  {
-    "hindi": "ज्ञान (Gyaan)",
-    "english": [
-      "knowledge",
-      "wisdom"
     ]
   },
   {
@@ -6113,20 +5314,6 @@ module.exports = [
     "english": [
       "ability",
       "capability"
-    ]
-  },
-  {
-    "hindi": "मौका (Mauka)",
-    "english": [
-      "opportunity",
-      "chance"
-    ]
-  },
-  {
-    "hindi": "फैसला (Faisla)",
-    "english": [
-      "decision",
-      "verdict"
     ]
   },
   {
@@ -6176,138 +5363,1409 @@ module.exports = [
     ]
   },
   {
-    "hindi": "आवाज़ (Awaaz)",
+    "hindi": "एक (Ek)",
     "english": [
-      "voice",
-      "sound"
+      "one"
     ]
   },
   {
-    "hindi": "रौशनी (Roshni)",
+    "hindi": "दो (Do)",
+    "english": [
+      "two"
+    ]
+  },
+  {
+    "hindi": "तीन (Teen)",
+    "english": [
+      "three"
+    ]
+  },
+  {
+    "hindi": "चार (Char)",
+    "english": [
+      "four"
+    ]
+  },
+  {
+    "hindi": "पाँच (Paanch)",
+    "english": [
+      "five"
+    ]
+  },
+  {
+    "hindi": "छह (Chheh)",
+    "english": [
+      "six"
+    ]
+  },
+  {
+    "hindi": "सात (Saat)",
+    "english": [
+      "seven"
+    ]
+  },
+  {
+    "hindi": "आठ (Aath)",
+    "english": [
+      "eight"
+    ]
+  },
+  {
+    "hindi": "नौ (Nau)",
+    "english": [
+      "nine"
+    ]
+  },
+  {
+    "hindi": "दस (Das)",
+    "english": [
+      "ten"
+    ]
+  },
+  {
+    "hindi": "बीस (Bees)",
+    "english": [
+      "twenty"
+    ]
+  },
+  {
+    "hindi": "पचास (Pachaas)",
+    "english": [
+      "fifty"
+    ]
+  },
+  {
+    "hindi": "सौ (Sau)",
+    "english": [
+      "hundred"
+    ]
+  },
+  {
+    "hindi": "हज़ार (Hazaar)",
+    "english": [
+      "thousand"
+    ]
+  },
+  {
+    "hindi": "लाख (Laakh)",
+    "english": [
+      "lakh",
+      "hundred thousand"
+    ]
+  },
+  {
+    "hindi": "करोड़ (Karod)",
+    "english": [
+      "crore",
+      "ten million"
+    ]
+  },
+  {
+    "hindi": "चाचा (Chacha)",
+    "english": [
+      "uncle"
+    ]
+  },
+  {
+    "hindi": "चाची (Chachi)",
+    "english": [
+      "aunt"
+    ]
+  },
+  {
+    "hindi": "मामा (Mama)",
+    "english": [
+      "uncle",
+      "maternal uncle"
+    ]
+  },
+  {
+    "hindi": "मामी (Mami)",
+    "english": [
+      "aunt",
+      "maternal aunt"
+    ]
+  },
+  {
+    "hindi": "दादा (Dada)",
+    "english": [
+      "grandfather",
+      "grandpa"
+    ]
+  },
+  {
+    "hindi": "दादी (Dadi)",
+    "english": [
+      "grandmother",
+      "grandma"
+    ]
+  },
+  {
+    "hindi": "नाना (Nana)",
+    "english": [
+      "grandfather",
+      "maternal grandfather"
+    ]
+  },
+  {
+    "hindi": "नानी (Nani)",
+    "english": [
+      "grandmother",
+      "maternal grandmother"
+    ]
+  },
+  {
+    "hindi": "ससुर (Sasur)",
+    "english": [
+      "father-in-law"
+    ]
+  },
+  {
+    "hindi": "सास (Saas)",
+    "english": [
+      "mother-in-law"
+    ]
+  },
+  {
+    "hindi": "दामाद (Damaad)",
+    "english": [
+      "son-in-law"
+    ]
+  },
+  {
+    "hindi": "बहू (Bahoo)",
+    "english": [
+      "daughter-in-law",
+      "bride"
+    ]
+  },
+  {
+    "hindi": "देवर (Devar)",
+    "english": [
+      "brother-in-law"
+    ]
+  },
+  {
+    "hindi": "ननद (Nanad)",
+    "english": [
+      "sister-in-law"
+    ]
+  },
+  {
+    "hindi": "भतीजा (Bhatija)",
+    "english": [
+      "nephew"
+    ]
+  },
+  {
+    "hindi": "भतीजी (Bhatiji)",
+    "english": [
+      "niece"
+    ]
+  },
+  {
+    "hindi": "सोना (Sona)",
+    "english": [
+      "sleep",
+      "gold"
+    ]
+  },
+  {
+    "hindi": "जागना (Jagna)",
+    "english": [
+      "wake up",
+      "awake"
+    ]
+  },
+  {
+    "hindi": "नहाना (Nahana)",
+    "english": [
+      "bathe",
+      "bath",
+      "shower"
+    ]
+  },
+  {
+    "hindi": "हँसना (Hansna)",
+    "english": [
+      "laugh",
+      "smile"
+    ]
+  },
+  {
+    "hindi": "गाना (Gana)",
+    "english": [
+      "sing",
+      "song"
+    ]
+  },
+  {
+    "hindi": "नाचना (Nachna)",
+    "english": [
+      "dance"
+    ]
+  },
+  {
+    "hindi": "सुनना (Sunna)",
+    "english": [
+      "hear",
+      "listen"
+    ]
+  },
+  {
+    "hindi": "खाना (Khana)",
+    "english": [
+      "eat",
+      "food"
+    ]
+  },
+  {
+    "hindi": "बंद करना (Band karna)",
+    "english": [
+      "close",
+      "shut"
+    ]
+  },
+  {
+    "hindi": "खोजना (Khojna)",
+    "english": [
+      "search",
+      "find",
+      "seek"
+    ]
+  },
+  {
+    "hindi": "साफ करना (Saaf karna)",
+    "english": [
+      "clean"
+    ]
+  },
+  {
+    "hindi": "पीटना (Peetna)",
+    "english": [
+      "beat",
+      "hit"
+    ]
+  },
+  {
+    "hindi": "उतरना (Utarna)",
+    "english": [
+      "descend",
+      "get down",
+      "remove"
+    ]
+  },
+  {
+    "hindi": "बहना (Bahna)",
+    "english": [
+      "flow",
+      "blow"
+    ]
+  },
+  {
+    "hindi": "हिलना (Hilna)",
+    "english": [
+      "move",
+      "shake"
+    ]
+  },
+  {
+    "hindi": "चीता (Cheeta)",
+    "english": [
+      "leopard",
+      "cheetah"
+    ]
+  },
+  {
+    "hindi": "भेड़िया (Bhediya)",
+    "english": [
+      "wolf"
+    ]
+  },
+  {
+    "hindi": "चिपकली (Chhipkali)",
+    "english": [
+      "lizard"
+    ]
+  },
+  {
+    "hindi": "साँप (Saanp)",
+    "english": [
+      "snake",
+      "serpent"
+    ]
+  },
+  {
+    "hindi": "बिच्छू (Bichhoo)",
+    "english": [
+      "scorpion"
+    ]
+  },
+  {
+    "hindi": "कौआ (Kauwa)",
+    "english": [
+      "crow"
+    ]
+  },
+  {
+    "hindi": "कोयल (Koyal)",
+    "english": [
+      "cuckoo"
+    ]
+  },
+  {
+    "hindi": "चिल (Cheel)",
+    "english": [
+      "eagle",
+      "kite"
+    ]
+  },
+  {
+    "hindi": "बत्तख (Battakh)",
+    "english": [
+      "duck"
+    ]
+  },
+  {
+    "hindi": "मक्खी (Makkhi)",
+    "english": [
+      "fly",
+      "housefly"
+    ]
+  },
+  {
+    "hindi": "मधुमक्खी (Madhumakkhi)",
+    "english": [
+      "bee",
+      "honeybee"
+    ]
+  },
+  {
+    "hindi": "मसाला (Masala)",
+    "english": [
+      "spice"
+    ]
+  },
+  {
+    "hindi": "हल्दी (Haldi)",
+    "english": [
+      "turmeric"
+    ]
+  },
+  {
+    "hindi": "जीरा (Jeera)",
+    "english": [
+      "cumin"
+    ]
+  },
+  {
+    "hindi": "धनिया (Dhaniya)",
+    "english": [
+      "coriander"
+    ]
+  },
+  {
+    "hindi": "इलायची (Elaichi)",
+    "english": [
+      "cardamom"
+    ]
+  },
+  {
+    "hindi": "लौंग (Laung)",
+    "english": [
+      "clove"
+    ]
+  },
+  {
+    "hindi": "सौंफ (Saunf)",
+    "english": [
+      "fennel"
+    ]
+  },
+  {
+    "hindi": "अदरक (Adrak)",
+    "english": [
+      "ginger"
+    ]
+  },
+  {
+    "hindi": "लहसुन (Lehsun)",
+    "english": [
+      "garlic"
+    ]
+  },
+  {
+    "hindi": "नींबू (Neembu)",
+    "english": [
+      "lemon",
+      "lime"
+    ]
+  },
+  {
+    "hindi": "आम (Aam)",
+    "english": [
+      "mango"
+    ]
+  },
+  {
+    "hindi": "सेब (Seb)",
+    "english": [
+      "apple"
+    ]
+  },
+  {
+    "hindi": "केला (Kela)",
+    "english": [
+      "banana"
+    ]
+  },
+  {
+    "hindi": "संतरा (Santra)",
+    "english": [
+      "orange"
+    ]
+  },
+  {
+    "hindi": "अंगूर (Angoor)",
+    "english": [
+      "grapes"
+    ]
+  },
+  {
+    "hindi": "पपीता (Papita)",
+    "english": [
+      "papaya"
+    ]
+  },
+  {
+    "hindi": "नारियल (Naariyal)",
+    "english": [
+      "coconut"
+    ]
+  },
+  {
+    "hindi": "तरबूज (Tarbooj)",
+    "english": [
+      "watermelon"
+    ]
+  },
+  {
+    "hindi": "अनार (Anaar)",
+    "english": [
+      "pomegranate"
+    ]
+  },
+  {
+    "hindi": "आलू (Aaloo)",
+    "english": [
+      "potato"
+    ]
+  },
+  {
+    "hindi": "टमाटर (Tamaatar)",
+    "english": [
+      "tomato"
+    ]
+  },
+  {
+    "hindi": "गोभी (Gobhi)",
+    "english": [
+      "cauliflower",
+      "cabbage"
+    ]
+  },
+  {
+    "hindi": "गाजर (Gaajar)",
+    "english": [
+      "carrot"
+    ]
+  },
+  {
+    "hindi": "मूली (Mooli)",
+    "english": [
+      "radish"
+    ]
+  },
+  {
+    "hindi": "मटर (Matar)",
+    "english": [
+      "peas"
+    ]
+  },
+  {
+    "hindi": "पालक (Paalak)",
+    "english": [
+      "spinach"
+    ]
+  },
+  {
+    "hindi": "खीरा (Kheera)",
+    "english": [
+      "cucumber"
+    ]
+  },
+  {
+    "hindi": "ताला (Taala)",
+    "english": [
+      "lock"
+    ]
+  },
+  {
+    "hindi": "चाबी (Chaabi)",
+    "english": [
+      "key"
+    ]
+  },
+  {
+    "hindi": "बाल्टी (Baalti)",
+    "english": [
+      "bucket"
+    ]
+  },
+  {
+    "hindi": "तौलिया (Tauliya)",
+    "english": [
+      "towel"
+    ]
+  },
+  {
+    "hindi": "साबुन (Saabun)",
+    "english": [
+      "soap"
+    ]
+  },
+  {
+    "hindi": "मंजन (Manjan)",
+    "english": [
+      "toothpaste",
+      "toothpowder"
+    ]
+  },
+  {
+    "hindi": "कंघा (Kangha)",
+    "english": [
+      "comb"
+    ]
+  },
+  {
+    "hindi": "झाड़ू (Jhadoo)",
+    "english": [
+      "broom"
+    ]
+  },
+  {
+    "hindi": "कढ़ाई (Kadhai)",
+    "english": [
+      "pan",
+      "wok"
+    ]
+  },
+  {
+    "hindi": "कटोरा (Katora)",
+    "english": [
+      "bowl"
+    ]
+  },
+  {
+    "hindi": "चम्मच (Chammach)",
+    "english": [
+      "spoon"
+    ]
+  },
+  {
+    "hindi": "थाली (Thaali)",
+    "english": [
+      "plate",
+      "platter"
+    ]
+  },
+  {
+    "hindi": "ग्लास (Glass)",
+    "english": [
+      "glass",
+      "tumbler"
+    ]
+  },
+  {
+    "hindi": "कप (Cup)",
+    "english": [
+      "cup"
+    ]
+  },
+  {
+    "hindi": "घड़ा (Ghada)",
+    "english": [
+      "pot",
+      "clay pot",
+      "pitcher"
+    ]
+  },
+  {
+    "hindi": "दवा (Dawa)",
+    "english": [
+      "medicine",
+      "drug"
+    ]
+  },
+  {
+    "hindi": "सुई (Sui)",
+    "english": [
+      "needle"
+    ]
+  },
+  {
+    "hindi": "धागा (Dhaaga)",
+    "english": [
+      "thread"
+    ]
+  },
+  {
+    "hindi": "रस्सी (Rassi)",
+    "english": [
+      "rope",
+      "cord"
+    ]
+  },
+  {
+    "hindi": "रूमाल (Rumaal)",
+    "english": [
+      "handkerchief"
+    ]
+  },
+  {
+    "hindi": "मोजा (Moja)",
+    "english": [
+      "sock",
+      "socks"
+    ]
+  },
+  {
+    "hindi": "दस्ताना (Dastaana)",
+    "english": [
+      "glove",
+      "gloves"
+    ]
+  },
+  {
+    "hindi": "चश्मा (Chashma)",
+    "english": [
+      "glasses",
+      "spectacles"
+    ]
+  },
+  {
+    "hindi": "छतरी (Chhatri)",
+    "english": [
+      "umbrella"
+    ]
+  },
+  {
+    "hindi": "बादल (Baadal)",
+    "english": [
+      "cloud"
+    ]
+  },
+  {
+    "hindi": "तूफान (Toofan)",
+    "english": [
+      "storm",
+      "tempest"
+    ]
+  },
+  {
+    "hindi": "ओस (Os)",
+    "english": [
+      "dew"
+    ]
+  },
+  {
+    "hindi": "कोहरा (Kohra)",
+    "english": [
+      "fog",
+      "mist"
+    ]
+  },
+  {
+    "hindi": "धुंध (Dhundh)",
+    "english": [
+      "haze",
+      "mist"
+    ]
+  },
+  {
+    "hindi": "झरना (Jharna)",
+    "english": [
+      "waterfall",
+      "spring"
+    ]
+  },
+  {
+    "hindi": "समुद्र (Samudra)",
+    "english": [
+      "sea",
+      "ocean"
+    ]
+  },
+  {
+    "hindi": "नहर (Nahar)",
+    "english": [
+      "canal"
+    ]
+  },
+  {
+    "hindi": "कुआँ (Kuan)",
+    "english": [
+      "well"
+    ]
+  },
+  {
+    "hindi": "कीचड़ (Keechad)",
+    "english": [
+      "mud",
+      "sludge"
+    ]
+  },
+  {
+    "hindi": "धूल (Dhool)",
+    "english": [
+      "dust"
+    ]
+  },
+  {
+    "hindi": "पुल (Pul)",
+    "english": [
+      "bridge"
+    ]
+  },
+  {
+    "hindi": "बागीचा (Bageecha)",
+    "english": [
+      "garden",
+      "park"
+    ]
+  },
+  {
+    "hindi": "दुकान (Dukaan)",
+    "english": [
+      "shop",
+      "store"
+    ]
+  },
+  {
+    "hindi": "सप्ताह (Saptah)",
+    "english": [
+      "week"
+    ]
+  },
+  {
+    "hindi": "दुपहर (Dopahar)",
+    "english": [
+      "afternoon",
+      "noon"
+    ]
+  },
+  {
+    "hindi": "सफेद (Safed)",
+    "english": [
+      "white"
+    ]
+  },
+  {
+    "hindi": "सलेटी (Saleti)",
+    "english": [
+      "grey",
+      "gray"
+    ]
+  },
+  {
+    "hindi": "सूनहरा (Sunehra)",
+    "english": [
+      "golden",
+      "gold"
+    ]
+  },
+  {
+    "hindi": "सिर (Sir)",
+    "english": [
+      "head"
+    ]
+  },
+  {
+    "hindi": "मुँह (Munh)",
+    "english": [
+      "mouth",
+      "face"
+    ]
+  },
+  {
+    "hindi": "दाँत (Daant)",
+    "english": [
+      "tooth",
+      "teeth"
+    ]
+  },
+  {
+    "hindi": "गाल (Gaal)",
+    "english": [
+      "cheek",
+      "cheeks"
+    ]
+  },
+  {
+    "hindi": "ठोड़ी (Thodi)",
+    "english": [
+      "chin"
+    ]
+  },
+  {
+    "hindi": "गला (Gala)",
+    "english": [
+      "throat",
+      "neck"
+    ]
+  },
+  {
+    "hindi": "गर्दन् (Gardan)",
+    "english": [
+      "neck"
+    ]
+  },
+  {
+    "hindi": "कंधा (Kandha)",
+    "english": [
+      "shoulder"
+    ]
+  },
+  {
+    "hindi": "कोहनी (Kohani)",
+    "english": [
+      "elbow"
+    ]
+  },
+  {
+    "hindi": "कलाई (Kalai)",
+    "english": [
+      "wrist"
+    ]
+  },
+  {
+    "hindi": "उँगली (Ungli)",
+    "english": [
+      "finger",
+      "toe",
+      "fingers",
+      "toes"
+    ]
+  },
+  {
+    "hindi": "कमर (Kamar)",
+    "english": [
+      "waist",
+      "hip"
+    ]
+  },
+  {
+    "hindi": "पैर (Pair)",
+    "english": [
+      "foot",
+      "leg",
+      "feet",
+      "legs"
+    ]
+  },
+  {
+    "hindi": "घुटना (Ghutna)",
+    "english": [
+      "knee"
+    ]
+  },
+  {
+    "hindi": "त्वचा (Tvacha)",
+    "english": [
+      "skin"
+    ]
+  },
+  {
+    "hindi": "छाती (Chhati)",
+    "english": [
+      "chest"
+    ]
+  },
+  {
+    "hindi": "नाखून (Naakhun)",
+    "english": [
+      "nail",
+      "nails",
+      "fingernail"
+    ]
+  },
+  {
+    "hindi": "महल (Mahal)",
+    "english": [
+      "palace",
+      "castle"
+    ]
+  },
+  {
+    "hindi": "झोपड़ी (Jhopdi)",
+    "english": [
+      "hut",
+      "cottage"
+    ]
+  },
+  {
+    "hindi": "थाना (Thana)",
+    "english": [
+      "police station"
+    ]
+  },
+  {
+    "hindi": "डाकघर (Dakghar)",
+    "english": [
+      "post office"
+    ]
+  },
+  {
+    "hindi": "कारखाना (Karkhana)",
+    "english": [
+      "factory",
+      "workshop"
+    ]
+  },
+  {
+    "hindi": "किला (Kila)",
+    "english": [
+      "fort",
+      "fortress"
+    ]
+  },
+  {
+    "hindi": "चिड़ियाघर (Chidiyaghar)",
+    "english": [
+      "zoo"
+    ]
+  },
+  {
+    "hindi": "सहेली (Saheli)",
+    "english": [
+      "friend",
+      "female friend"
+    ]
+  },
+  {
+    "hindi": "पति (Pati)",
+    "english": [
+      "husband"
+    ]
+  },
+  {
+    "hindi": "पत्नी (Patni)",
+    "english": [
+      "wife"
+    ]
+  },
+  {
+    "hindi": "प्रेमी (Premi)",
+    "english": [
+      "lover",
+      "boyfriend"
+    ]
+  },
+  {
+    "hindi": "प्रेमिका (Premika)",
+    "english": [
+      "lover",
+      "girlfriend"
+    ]
+  },
+  {
+    "hindi": "दुल्हन (Dulhan)",
+    "english": [
+      "bride"
+    ]
+  },
+  {
+    "hindi": "दूल्हा (Dulha)",
+    "english": [
+      "groom",
+      "bridegroom"
+    ]
+  },
+  {
+    "hindi": "रिश्तेदार (Rishtedar)",
+    "english": [
+      "relative",
+      "relatives",
+      "relation"
+    ]
+  },
+  {
+    "hindi": "खड़ा होना (Khada hona)",
+    "english": [
+      "stand",
+      "stand up"
+    ]
+  },
+  {
+    "hindi": "छूना (Choona)",
+    "english": [
+      "touch",
+      "feel"
+    ]
+  },
+  {
+    "hindi": "सूँघना (Soonghna)",
+    "english": [
+      "smell",
+      "sniff"
+    ]
+  },
+  {
+    "hindi": "चखना (Chakhna)",
+    "english": [
+      "taste"
+    ]
+  },
+  {
+    "hindi": "याद करना (Yaad karna)",
+    "english": [
+      "remember",
+      "memorize"
+    ]
+  },
+  {
+    "hindi": "अब (Ab)",
+    "english": [
+      "now"
+    ]
+  },
+  {
+    "hindi": "तब (Tab)",
+    "english": [
+      "then"
+    ]
+  },
+  {
+    "hindi": "वहाँ (Wahan)",
+    "english": [
+      "there"
+    ]
+  },
+  {
+    "hindi": "क्या (Kya)",
+    "english": [
+      "what"
+    ]
+  },
+  {
+    "hindi": "कौन (Kaun)",
+    "english": [
+      "who"
+    ]
+  },
+  {
+    "hindi": "बगीचा (Bageecha)",
+    "english": [
+      "garden",
+      "park"
+    ]
+  },
+  {
+    "hindi": "रोशनी (Roshni)",
     "english": [
       "light",
       "brightness"
     ]
   },
   {
-    "hindi": "अँधेरा (Andhera)",
+    "hindi": "अंधेरा (Andhera)",
     "english": [
       "darkness",
       "dark"
     ]
   },
   {
-    "hindi": "रंग (Rang)",
+    "hindi": "भीड़ (Bheed)",
     "english": [
-      "color",
-      "hue"
+      "crowd",
+      "mob"
     ]
   },
   {
-    "hindi": "खुशबू (Khushboo)",
+    "hindi": "शांति (Shaanti)",
     "english": [
-      "fragrance",
-      "smell",
-      "scent"
+      "peace",
+      "quiet",
+      "calm"
     ]
   },
   {
-    "hindi": "स्वाद (Swaad)",
+    "hindi": "सत्य (Satya)",
     "english": [
-      "taste",
-      "flavor"
+      "truth"
     ]
   },
   {
-    "hindi": "स्पर्श (Sparsh)",
+    "hindi": "असत्य (Asatya)",
     "english": [
-      "touch"
+      "lie",
+      "falsehood"
     ]
   },
   {
-    "hindi": "दर्द (Dard)",
+    "hindi": "ख़ुश (Khush)",
     "english": [
-      "pain",
-      "ache"
+      "happy",
+      "glad",
+      "cheerful"
     ]
   },
   {
-    "hindi": "ख़ुशी (Khushi)",
+    "hindi": "उदास (Udaas)",
     "english": [
-      "happiness",
-      "joy"
+      "sad",
+      "unhappy",
+      "gloomy"
     ]
   },
   {
-    "hindi": "गुस्सा (Gussa)",
+    "hindi": "पुराना (Purana)",
     "english": [
-      "anger",
-      "rage"
+      "old",
+      "ancient"
     ]
   },
   {
-    "hindi": "दर (Dar)",
+    "hindi": "गंदा (Ganda)",
     "english": [
-      "fear",
-      "fright"
+      "dirty",
+      "filthy"
     ]
   },
   {
-    "hindi": "प्यार (Pyaar)",
+    "hindi": "महंगा (Mehnga)",
     "english": [
-      "love",
-      "affection"
+      "expensive",
+      "costly"
     ]
   },
   {
-    "hindi": "नफरत (Nafrat)",
+    "hindi": "मजबूत (Mazboot)",
     "english": [
-      "hate",
-      "hatred"
+      "strong",
+      "sturdy"
     ]
   },
   {
-    "hindi": "उम्मीद (Umeed)",
+    "hindi": "कमजोर (Kamzor)",
     "english": [
-      "hope"
+      "weak"
     ]
   },
   {
-    "hindi": "सपना (Sapna)",
+    "hindi": "चतुर (Chatur)",
     "english": [
-      "dream"
+      "clever",
+      "smart",
+      "cunning"
     ]
   },
   {
-    "hindi": "ज़िन्दगी (Zindagi)",
+    "hindi": "मूर्ख (Moorkh)",
     "english": [
-      "life"
+      "foolish",
+      "stupid",
+      "idiot"
     ]
   },
   {
-    "hindi": "दुनिया (Duniya)",
+    "hindi": "ईमानदार (Imaandar)",
     "english": [
-      "world"
+      "honest"
     ]
   },
   {
-    "hindi": "इंसान (Insaan)",
+    "hindi": "सुस्त (Sust)",
     "english": [
-      "human",
-      "person"
+      "lazy",
+      "slow",
+      "sluggish"
     ]
   },
   {
-    "hindi": "कहानी (Kahani)",
+    "hindi": "फुर्तीला (Furteela)",
     "english": [
-      "story",
-      "tale"
+      "active",
+      "energetic",
+      "agile"
     ]
   },
   {
-    "hindi": "उम्मीद (Umeed)",
+    "hindi": "बदसूरत (Badsurat)",
     "english": [
-      "hope"
+      "ugly"
+    ]
+  },
+  {
+    "hindi": "सकरा (Sakra)",
+    "english": [
+      "narrow"
+    ]
+  },
+  {
+    "hindi": "कठिन (Kathin)",
+    "english": [
+      "difficult",
+      "hard",
+      "tough"
+    ]
+  },
+  {
+    "hindi": "महत्वपूर्ण (Mahatvapurna)",
+    "english": [
+      "important",
+      "significant"
+    ]
+  },
+  {
+    "hindi": "आवश्यक (Aavashyak)",
+    "english": [
+      "necessary",
+      "essential",
+      "needed"
+    ]
+  },
+  {
+    "hindi": "अजीब (Ajeeb)",
+    "english": [
+      "strange",
+      "weird",
+      "odd"
+    ]
+  },
+  {
+    "hindi": "साधारण (Saadharan)",
+    "english": [
+      "simple",
+      "ordinary",
+      "common"
+    ]
+  },
+  {
+    "hindi": "विशेष (Vishesh)",
+    "english": [
+      "special",
+      "particular",
+      "specific"
+    ]
+  },
+  {
+    "hindi": "खिलौना (Khilauna)",
+    "english": [
+      "toy",
+      "plaything"
+    ]
+  },
+  {
+    "hindi": "दुकानदार (Dukandaar)",
+    "english": [
+      "shopkeeper",
+      "merchant"
+    ]
+  },
+  {
+    "hindi": "सिनेमा (Cinema)",
+    "english": [
+      "cinema",
+      "movie",
+      "theater"
+    ]
+  },
+  {
+    "hindi": "मेला (Mela)",
+    "english": [
+      "fair",
+      "festival"
+    ]
+  },
+  {
+    "hindi": "त्योहार (Tyohar)",
+    "english": [
+      "festival",
+      "holiday"
+    ]
+  },
+  {
+    "hindi": "उपहार (Upahar)",
+    "english": [
+      "gift",
+      "present"
+    ]
+  },
+  {
+    "hindi": "बधाई (Badhai)",
+    "english": [
+      "congratulations",
+      "greeting"
+    ]
+  },
+  {
+    "hindi": "शादी (Shaadi)",
+    "english": [
+      "marriage",
+      "wedding"
+    ]
+  },
+  {
+    "hindi": "पार्टी (Party)",
+    "english": [
+      "party",
+      "celebration"
+    ]
+  },
+  {
+    "hindi": "जन्मदिन (Janmadin)",
+    "english": [
+      "birthday"
+    ]
+  },
+  {
+    "hindi": "कोयला (Koyla)",
+    "english": [
+      "coal"
+    ]
+  },
+  {
+    "hindi": "लोहा (Loha)",
+    "english": [
+      "iron"
+    ]
+  },
+  {
+    "hindi": "तांबा (Tamba)",
+    "english": [
+      "copper"
+    ]
+  },
+  {
+    "hindi": "कांच (Kaanch)",
+    "english": [
+      "glass"
+    ]
+  },
+  {
+    "hindi": "प्लास्टिक (Plastic)",
+    "english": [
+      "plastic"
+    ]
+  },
+  {
+    "hindi": "मिट्टी (Mitti)",
+    "english": [
+      "soil",
+      "dirt",
+      "mud",
+      "clay"
     ]
   }
 ];

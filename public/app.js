@@ -17,8 +17,135 @@ let bingoNextNumber = 1;
 let myBingoBoard = [];
 let calledNumbers = [];
 let currentTurnPlayerId = null;
-let previousLinesCount = 0;
-let randomizeInterval = null;
+// Avatar Configuration
+const DEFAULT_AVATARS = ['🐱', '🐶', '🦊', '🦁', '🐼', '🐯', '🦄', '🐲', '🤖', '👾', '🚀', '👑', '⚡', '🎯', '🥷', '🍕', '🌮', '🍦'];
+let selectedAvatar = localStorage.getItem('shabd_anuvad_avatar') || '🐱';
+let voiceCallerEnabled = true;
+
+function initAvatarPicker() {
+  const grid = document.getElementById('avatar-options-grid');
+  const display = document.getElementById('current-avatar-display');
+  const nameDisplay = document.getElementById('current-avatar-name');
+  if (!grid) return;
+
+  grid.innerHTML = '';
+  DEFAULT_AVATARS.forEach(avatar => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `avatar-option-btn ${avatar === selectedAvatar ? 'selected' : ''}`;
+    btn.textContent = avatar;
+    btn.addEventListener('click', () => {
+      selectedAvatar = avatar;
+      localStorage.setItem('shabd_anuvad_avatar', avatar);
+      if (display) display.textContent = avatar;
+      if (nameDisplay) nameDisplay.textContent = `Avatar Selected: ${avatar}`;
+      document.querySelectorAll('.avatar-option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+    grid.appendChild(btn);
+  });
+
+  if (display) display.textContent = selectedAvatar;
+  if (nameDisplay) nameDisplay.textContent = `Avatar Selected: ${selectedAvatar}`;
+}
+
+// Helper: Determine Bingo Letter (B-I-N-G-O) from number 1-25
+function getBingoLetter(num) {
+  if (num >= 1 && num <= 5) return 'B';
+  if (num >= 6 && num <= 10) return 'I';
+  if (num >= 11 && num <= 15) return 'N';
+  if (num >= 16 && num <= 20) return 'G';
+  return 'O';
+}
+
+// Real-Life Bingo Speech Synthesis Voice Announcer
+function speakBingoCall(number) {
+  if (!voiceCallerEnabled || !('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const num = parseInt(number);
+    const letter = getBingoLetter(num);
+    let phrase = `${letter} ${num}!`;
+    if (num < 10) phrase = `${letter} ${num}! Single digit ${num}!`;
+    else {
+      const tens = Math.floor(num / 10);
+      const ones = num % 10;
+      phrase = `${letter} ${num}... ${tens}, ${ones}, ${num}!`;
+    }
+    const utterance = new SpeechSynthesisUtterance(phrase);
+    utterance.rate = 1.05;
+    utterance.pitch = 1.05;
+    window.speechSynthesis.speak(utterance);
+  } catch (e) {}
+}
+
+// Real-Life 3D Bingo Ball Drop Animator
+function updateBingoBallShowcase(number) {
+  const ball = document.getElementById('bingo-drawn-ball');
+  const ballLetter = document.getElementById('ball-letter');
+  const ballNum = document.getElementById('ball-number');
+  const announcement = document.getElementById('bingo-caller-announcement');
+  
+  const letter = getBingoLetter(number);
+  if (ballLetter) ballLetter.textContent = letter;
+  if (ballNum) ballNum.textContent = number;
+  if (announcement) announcement.textContent = `Ball Called: ${letter}-${number}!`;
+  
+  if (ball) {
+    ball.classList.remove('drawn-pop');
+    void ball.offsetWidth; // trigger reflow
+    ball.classList.add('drawn-pop');
+  }
+}
+
+// Master Called Board Tray (1 to 25)
+function renderMasterBoard(calledList) {
+  const grid = document.getElementById('master-board-grid');
+  const countSpan = document.getElementById('master-called-count');
+  if (!grid) return;
+  
+  if (countSpan) countSpan.textContent = calledList.length;
+  
+  const latestNum = calledList.length > 0 ? calledList[calledList.length - 1] : null;
+  grid.innerHTML = '';
+  for (let i = 1; i <= 25; i++) {
+    const badge = document.createElement('div');
+    const isCalled = calledList.includes(i);
+    const isLatest = (i === latestNum);
+    badge.className = `master-ball-badge ${isCalled ? 'called' : ''} ${isLatest ? 'latest' : ''}`;
+    badge.textContent = i;
+    grid.appendChild(badge);
+  }
+}
+
+window.toggleMasterBoard = function() {
+  const grid = document.getElementById('master-board-grid');
+  const btn = document.getElementById('master-board-toggle-btn');
+  if (grid) {
+    const isHidden = (grid.style.display === 'none' || !grid.style.display);
+    grid.style.display = isHidden ? 'grid' : 'none';
+    if (btn) btn.textContent = isHidden ? 'Hide Tray ▲' : 'Show Tray ▼';
+  }
+};
+
+// Play a quick ink stamp dab sound
+function playDabSound() {
+  try {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.exponentialRampToValueAtTime(140, now + 0.12);
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.12);
+  } catch (e) {}
+}
 
 // Game Type selection handler (called from Welcome Screen)
 window.selectGameType = function(type) {
@@ -484,9 +611,23 @@ function handleChatSend(inputElement) {
 
 // Auto-focus username input on page load (or load last used name) and parse direct room URL
 window.addEventListener('DOMContentLoaded', () => {
+  initAvatarPicker();
+
   const savedUsername = localStorage.getItem('shabd_anuvad_username');
   if (savedUsername) {
     inputUsername.value = savedUsername;
+  }
+  
+  // Voice toggle button
+  const btnVoiceToggle = document.getElementById('btn-bingo-voice-toggle');
+  if (btnVoiceToggle) {
+    btnVoiceToggle.addEventListener('click', () => {
+      voiceCallerEnabled = !voiceCallerEnabled;
+      const statusText = document.getElementById('voice-toggle-status');
+      const icon = document.getElementById('voice-toggle-icon');
+      if (statusText) statusText.textContent = voiceCallerEnabled ? 'ON' : 'OFF';
+      if (icon) icon.textContent = voiceCallerEnabled ? '🔊' : '🔇';
+    });
   }
   
   // Parse direct room URL code, e.g. /room/ABCD
@@ -547,7 +688,7 @@ btnCreateRoom.addEventListener('click', () => {
   // Store username in local storage for convenience
   localStorage.setItem('shabd_anuvad_username', username);
   currentUsername = username;
-  socket.emit('create_room', { username: username, gameType: selectedGameType });
+  socket.emit('create_room', { username: username, gameType: selectedGameType, avatar: selectedAvatar });
 });
 
 btnJoinRoom.addEventListener('click', () => {
@@ -565,7 +706,7 @@ btnJoinRoom.addEventListener('click', () => {
   localStorage.setItem('shabd_anuvad_username', username);
   currentUsername = username;
   currentRoomCode = roomCode.toUpperCase();
-  socket.emit('join_room', { code: currentRoomCode, username: username });
+  socket.emit('join_room', { code: currentRoomCode, username: username, avatar: selectedAvatar });
 });
 
 // Lobby Screen
@@ -640,6 +781,44 @@ function handleScreenGameTap(e) {
 screens.game.addEventListener('click', handleScreenGameTap);
 screens.game.addEventListener('touchend', handleScreenGameTap);
 
+// Host Game Over Match Restart Actions
+const btnRestartMatch = document.getElementById('btn-restart-match');
+const btnReturnLobby = document.getElementById('btn-return-lobby');
+
+if (btnRestartMatch) {
+  btnRestartMatch.addEventListener('click', () => {
+    if (!isHost || !currentRoomCode) return;
+    if (selectedGameType === 'bingo') {
+      const turnTimer = document.getElementById('bingo-timer-select').value;
+      const matchRounds = document.getElementById('bingo-rounds-select').value;
+      const mode = document.getElementById('bingo-mode-select').value;
+      socket.emit('start_game', {
+        code: currentRoomCode,
+        bingoTurnTimer: turnTimer,
+        bingoMatchRounds: matchRounds,
+        bingoMode: mode
+      });
+    } else {
+      const roundTime = document.getElementById('timer-select').value;
+      const totalRounds = selectRounds.value;
+      const mode = document.getElementById('mode-select').value;
+      socket.emit('start_game', {
+        code: currentRoomCode,
+        roundTime: roundTime,
+        totalRounds: totalRounds,
+        gameMode: mode
+      });
+    }
+  });
+}
+
+if (btnReturnLobby) {
+  btnReturnLobby.addEventListener('click', () => {
+    if (!isHost || !currentRoomCode) return;
+    socket.emit('return_to_lobby', { code: currentRoomCode });
+  });
+}
+
 // Game Over Screen
 btnBackHome.addEventListener('click', () => {
   currentRoomCode = null;
@@ -662,6 +841,9 @@ btnBackHome.addEventListener('click', () => {
   const bingoChatBox = document.getElementById('bingo-chat-box');
   if (bingoChatBox) bingoChatBox.innerHTML = '';
   
+  const roundModal = document.getElementById('bingo-round-modal');
+  if (roundModal) roundModal.style.display = 'none';
+
   showScreen('welcome');
   
   if (window.location.pathname !== '/') {
@@ -719,7 +901,7 @@ socket.on('room_update', (data) => {
         const li = document.createElement('li');
         li.innerHTML = `
           <div class="player-name-wrapper">
-            <div class="player-avatar">${p.username.charAt(0).toUpperCase()}</div>
+            <div class="player-avatar">${p.avatar || '🐱'}</div>
             <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
           </div>
           ${isPlayerHost ? '<span class="player-role-badge">Host</span>' : ''}
@@ -796,7 +978,11 @@ socket.on('room_update', (data) => {
         document.body.classList.remove('bingo-my-turn-active');
       } else {
         turnBanner.classList.remove('auto-caller-active');
-        if (isMyTurn) {
+        if (me && me.isSpectator) {
+          turnBanner.textContent = `👁️ You are Spectating. Wait for the next match!`;
+          turnBanner.className = 'turn-banner';
+          document.body.classList.remove('bingo-my-turn-active');
+        } else if (isMyTurn) {
           turnBanner.textContent = `⭐ It's Your Turn! Call a number.`;
           turnBanner.className = 'turn-banner your-turn';
           document.body.classList.add('bingo-my-turn-active');
@@ -823,13 +1009,14 @@ socket.on('room_update', (data) => {
         let lineRepr = letters.map((l, idx) => idx < pLines ? `<span class="score-letter lit">${l}</span>` : `<span class="score-letter">${l}</span>`).join(' ');
 
         li.innerHTML = `
-          <div class="player-score-info">
+          <div class="player-score-info" style="display:flex; align-items:center;">
+            <div class="player-avatar" style="width:24px; height:24px; font-size:0.9rem;">${p.avatar || '🐱'}</div>
             <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
-            ${p.id === data.hostId ? '<span class="player-role-badge" style="font-size:0.6rem; padding:1px 4px;">Host</span>' : ''}
-            <span class="match-wins-badge" style="margin-left:5px; font-size:0.75rem; color:var(--warning); font-weight:bold;">🏆 ${p.matchWins || 0} Wins</span>
+            ${p.id === data.hostId ? '<span class="player-role-badge" style="font-size:0.6rem; padding:1px 4px; margin-left:4px;">Host</span>' : ''}
+            <span class="match-wins-badge" style="margin-left:5px; font-size:0.75rem; color:var(--warning); font-weight:bold;">🏆 ${p.matchWins || 0}</span>
           </div>
           <div class="bingo-score-badge">
-            ${lineRepr} (${pLines} lines)
+            ${lineRepr}
           </div>
         `;
         scoreboard.appendChild(li);
@@ -861,10 +1048,13 @@ socket.on('room_update', (data) => {
         const li = document.createElement('li');
         li.innerHTML = `
           <div class="player-name-wrapper">
-            <div class="player-avatar">${p.username.charAt(0).toUpperCase()}</div>
-            <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
+            <div class="player-avatar" style="width:24px; height:24px; font-size:0.9rem;">${p.avatar || '🐱'}</div>
+            <span class="player-name" style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
+            ${isPlayerHost ? '<span class="player-role-badge">Host</span>' : ''}
           </div>
-          ${isPlayerHost ? '<span class="player-role-badge">Host</span>' : ''}
+          <div class="player-status-wrapper">
+            <span class="player-score"></span>
+          </div>
         `;
         lobbyPlayersList.appendChild(li);
       });
@@ -951,6 +1141,7 @@ socket.on('room_update', (data) => {
 
         li.innerHTML = `
           <div class="player-score-info">
+            <div class="player-avatar" style="width:24px; height:24px; font-size:0.9rem;">${p.avatar || '🐱'}</div>
             <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
             ${isPlayerHost ? '<span class="player-role-badge" style="font-size:0.6rem; padding:1px 4px;">Host</span>' : ''}
             ${livesHtml}
@@ -1251,6 +1442,21 @@ socket.on('round_ended', (data) => {
 socket.on('game_over', (data) => {
   showScreen('gameover');
   
+  // Close any active bingo round modal
+  const roundModal = document.getElementById('bingo-round-modal');
+  if (roundModal) roundModal.style.display = 'none';
+
+  // Show host actions vs guest message
+  const hostActions = document.getElementById('host-gameover-actions');
+  const guestMsg = document.getElementById('guest-gameover-msg');
+  if (isHost) {
+    if (hostActions) hostActions.style.display = 'flex';
+    if (guestMsg) guestMsg.style.display = 'none';
+  } else {
+    if (hostActions) hostActions.style.display = 'none';
+    if (guestMsg) guestMsg.style.display = 'block';
+  }
+
   // Set Winner Name
   let announcementHtml = '';
   if (data.message) {
@@ -1258,16 +1464,16 @@ socket.on('game_over', (data) => {
   }
   
   if (selectedGameType === 'bingo') {
-    if (data.finalScores.length > 0) {
+    if (data.finalScores && data.finalScores.length > 0) {
       const winner = data.finalScores[0];
-      announcementHtml += `🏆 ${winner.username} won the match!`;
+      announcementHtml += `🏆 ${winner.avatar || '🐱'} ${winner.username} won the match!`;
     } else {
       announcementHtml += "No players in the game.";
     }
   } else {
-    if (data.finalScores.length > 0) {
+    if (data.finalScores && data.finalScores.length > 0) {
       const winner = data.finalScores[0];
-      announcementHtml += `🏆 ${winner.username} wins the match with ${winner.score} correct answers!`;
+      announcementHtml += `🏆 ${winner.avatar || '🐱'} ${winner.username} wins the match with ${winner.score} correct answers!`;
     } else {
       announcementHtml += "No players in the game.";
     }
@@ -1276,13 +1482,14 @@ socket.on('game_over', (data) => {
   
   // Render Leaderboard list
   finalPlayersList.innerHTML = '';
-  data.finalScores.forEach((p, idx) => {
+  (data.finalScores || []).forEach((p, idx) => {
     const li = document.createElement('li');
     const unitText = selectedGameType === 'bingo' ? 'Match Wins' : 'Correct';
     li.innerHTML = `
-      <div>
+      <div style="display:flex; align-items:center;">
         <span class="rank-badge">${idx + 1}</span>
-        <span>${p.username}</span>
+        <span class="player-avatar" style="width:28px; height:28px; font-size:1.05rem; margin-left:6px;">${p.avatar || '🐱'}</span>
+        <span style="font-weight:700;">${p.username}</span>
       </div>
       <span class="final-score-points">${p.score} ${unitText}</span>
     `;
@@ -1793,6 +2000,9 @@ socket.on('bingo_game_started', ({ currentTurnPlayerId: turnId }) => {
 socket.on('bingo_number_called', ({ number, calledNumbers: list }) => {
   calledNumbers = list;
   playSuccessSound();
+  updateBingoBallShowcase(number);
+  speakBingoCall(number);
+  renderMasterBoard(calledNumbers);
 
   const banner = document.getElementById('bingo-last-called');
   const container = document.getElementById('bingo-last-called-container');
@@ -1804,11 +2014,62 @@ socket.on('bingo_number_called', ({ number, calledNumbers: list }) => {
   }
 });
 
-socket.on('bingo_round_ended', ({ winnerNames, round, totalRounds }) => {
-  showAlert(
-    'Round Ended 🏁', 
-    `${winnerNames} won Round ${round}! Match length: Best of ${totalRounds}.\n\nPreparing next board in 5 seconds...`
-  );
+socket.on('bingo_round_ended', (data) => {
+  const roundModal = document.getElementById('bingo-round-modal');
+  const title = document.getElementById('bingo-round-modal-title');
+  const winnersList = document.getElementById('round-winners-list');
+  const standingsTbody = document.getElementById('bingo-standings-tbody');
+  const countdownBar = document.getElementById('round-countdown-bar');
+  
+  if (roundModal && title && winnersList && standingsTbody) {
+    title.textContent = `Round ${data.round} Result! (Best of ${data.totalRounds})`;
+    
+    // Render round winners
+    winnersList.innerHTML = '';
+    const winners = data.roundWinners || [];
+    if (winners.length > 0) {
+      winners.forEach(w => {
+        const item = document.createElement('div');
+        item.className = 'round-winner-item';
+        item.innerHTML = `
+          <div class="winner-user-col">
+            <span class="player-avatar">${w.avatar || '🐱'}</span>
+            <span>${w.username}</span>
+          </div>
+          <span class="winner-badge">🏆 5 Lines! (+1 Win)</span>
+        `;
+        winnersList.appendChild(item);
+      });
+    } else {
+      winnersList.innerHTML = `<div style="color:var(--text-muted); font-size:0.9rem;">Round completed!</div>`;
+    }
+
+    // Render series standings
+    standingsTbody.innerHTML = '';
+    const standings = data.standings || [];
+    standings.forEach((p, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="rank-badge" style="font-size:0.75rem; width:20px; height:20px;">${idx + 1}</span></td>
+        <td class="standings-user-col"><span class="player-avatar" style="width:24px; height:24px; font-size:0.9rem;">${p.avatar || '🐱'}</span> <span>${p.username}</span></td>
+        <td><strong style="color:var(--warning);">🏆 ${p.matchWins}</strong></td>
+        <td>${p.completedLines} / 5</td>
+      `;
+      standingsTbody.appendChild(tr);
+    });
+
+    // Animate countdown bar
+    if (countdownBar) {
+      countdownBar.style.transition = 'none';
+      countdownBar.style.width = '100%';
+      setTimeout(() => {
+        countdownBar.style.transition = 'width 5s linear';
+        countdownBar.style.width = '0%';
+      }, 50);
+    }
+
+    roundModal.style.display = 'flex';
+  }
 });
 
 socket.on('bingo_bomb_detonated', ({ bombNumber, freeStrikeNumber }) => {

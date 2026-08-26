@@ -14,6 +14,25 @@ function shuffleArray(array) {
   return arr;
 }
 
+// Helper to check if guess matches the answer (including singular/plural equivalents)
+function areWordsEquivalent(w1, w2) {
+  const s1 = w1.toLowerCase().trim();
+  const s2 = w2.toLowerCase().trim();
+  if (s1 === s2) return true;
+  
+  // Helper to check standard plural endings
+  const checkPlural = (singular, plural) => {
+    if (plural === singular + 's') return true;
+    if (plural === singular + 'es') return true;
+    if (singular.endsWith('y') && plural === singular.slice(0, -1) + 'ies') return true;
+    if (singular.endsWith('f') && plural === singular.slice(0, -1) + 'ves') return true;
+    if (singular.endsWith('fe') && plural === singular.slice(0, -2) + 'ves') return true;
+    return false;
+  };
+
+  return checkPlural(s1, s2) || checkPlural(s2, s1);
+}
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
@@ -245,6 +264,7 @@ function broadcastRoomUpdate(roomCode) {
   const playersList = Object.values(room.players).map(p => ({
     id: p.id,
     username: p.username,
+    avatar: p.avatar || '🐱',
     score: p.score,
     roundScore: p.roundScore,
     hasGuessed: p.hasGuessed,
@@ -372,6 +392,7 @@ function processCalledNumber(roomCode, number) {
       // Leaderboard shows total matchWins
       const finalScores = Object.values(room.players).map(p => ({
         username: p.username,
+        avatar: p.avatar || '🐱',
         score: p.matchWins || 0
       })).sort((a, b) => b.score - a.score);
 
@@ -386,7 +407,18 @@ function processCalledNumber(roomCode, number) {
       room.gameState = 'round_end';
 
       io.to(roomCode).emit('bingo_round_ended', {
-        winnerNames: winners.map(w => w.username).join(', '),
+        roundWinners: winners.map(w => ({
+          username: w.username,
+          avatar: w.avatar || '🐱',
+          completedLines: w.completedLines,
+          matchWins: w.matchWins
+        })),
+        standings: Object.values(room.players).map(p => ({
+          username: p.username,
+          avatar: p.avatar || '🐱',
+          matchWins: p.matchWins || 0,
+          completedLines: p.completedLines || 0
+        })).sort((a, b) => b.matchWins - a.matchWins),
         round: room.round,
         totalRounds: room.totalRounds
       });
@@ -508,6 +540,7 @@ function endRound(roomCode, consensusReached = false) {
         room.gameState = 'game_over';
         const finalScores = Object.values(room.players).map(p => ({
           username: p.username,
+          avatar: p.avatar || '🐱',
           score: p.score
         })).sort((a, b) => b.score - a.score);
 
@@ -526,6 +559,7 @@ function endRound(roomCode, consensusReached = false) {
         room.gameState = 'game_over';
         const finalScores = Object.values(room.players).map(p => ({
           username: p.username,
+          avatar: p.avatar || '🐱',
           score: p.score
         })).sort((a, b) => b.score - a.score);
 
@@ -544,6 +578,7 @@ function endRound(roomCode, consensusReached = false) {
       room.gameState = 'game_over';
       const finalScores = Object.values(room.players).map(p => ({
         username: p.username,
+        avatar: p.avatar || '🐱',
         score: p.score
       })).sort((a, b) => b.score - a.score);
 
@@ -670,7 +705,7 @@ io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
 
   // 1. Create Room
-  socket.on('create_room', ({ username, gameType }) => {
+  socket.on('create_room', ({ username, gameType, avatar }) => {
     if (!username || username.trim() === '') {
       return socket.emit('error_message', 'Invalid username.');
     }
@@ -701,6 +736,8 @@ io.on('connection', (socket) => {
       hintsRevealed: 0,
       hintState: '',
       gameMode: 'classic',
+      // Used words memory to prevent repetition
+      usedWords: [],
       
       // Bingo Game Configuration
       calledNumbers: [],
@@ -716,6 +753,7 @@ io.on('connection', (socket) => {
     rooms[roomCode].players[socket.id] = {
       id: socket.id,
       username: username.trim(),
+      avatar: avatar || '🐱',
       score: 0,
       roundScore: 0,
       hasGuessed: false,
@@ -724,17 +762,19 @@ io.on('connection', (socket) => {
       // Bingo specific fields
       isReady: false,
       bingoBoard: null,
-      completedLines: 0
+      completedLines: 0,
+      matchWins: 0,
+      isSpectator: false
     };
 
     socket.join(roomCode);
-    console.log(`Room created: ${roomCode} by ${username} [Game: ${typeOfGame}]`);
+    console.log(`Room created: ${roomCode} by ${username} [Game: ${typeOfGame}, Avatar: ${avatar || '🐱'}]`);
     
     broadcastRoomUpdate(roomCode);
   });
 
   // 2. Join Room
-  socket.on('join_room', ({ code, username }) => {
+  socket.on('join_room', ({ code, username, avatar }) => {
     if (!code || !username) {
       return socket.emit('error_message', 'Code and Username are required.');
     }
@@ -746,10 +786,6 @@ io.on('connection', (socket) => {
       return socket.emit('error_message', 'Room not found.');
     }
 
-    if (room.gameState !== 'lobby') {
-      return socket.emit('error_message', 'Game has already started in this room.');
-    }
-
     // Check if username is already taken in this room
     const isNameTaken = Object.values(room.players).some(
       p => p.username.toLowerCase() === username.toLowerCase().trim()
@@ -759,9 +795,11 @@ io.on('connection', (socket) => {
     }
 
     // Join room
+    const isSpectator = room.gameState !== 'lobby' && room.gameState !== 'placement' && room.gameType === 'bingo';
     room.players[socket.id] = {
       id: socket.id,
       username: username.trim(),
+      avatar: avatar || '🐱',
       score: 0,
       roundScore: 0,
       hasGuessed: false,
@@ -770,8 +808,15 @@ io.on('connection', (socket) => {
       // Bingo specific fields
       isReady: false,
       bingoBoard: null,
-      completedLines: 0
+      completedLines: 0,
+      matchWins: 0,
+      isSpectator: isSpectator
     };
+
+    // If mid-game join in Translate Survival mode, add to turnOrder
+    if (room.gameState !== 'lobby' && room.gameType === 'translate' && room.gameMode === 'survival' && room.turnOrder) {
+      room.turnOrder.push(socket.id);
+    }
 
     socket.join(roomCode);
     console.log(`Player ${username} joined Room ${roomCode}`);
@@ -848,13 +893,40 @@ io.on('connection', (socket) => {
     const roundsCount = parseInt(totalRounds) || 10;
     room.totalRounds = Math.min(Math.max(roundsCount, 3), 250); // enforce min 3, max 250 rounds
 
-    const wordsPool = [...words];
+    // Reset scores and states for fresh match
+    Object.values(room.players).forEach(p => {
+      p.score = 0;
+      p.roundScore = 0;
+      p.hasGuessed = false;
+      p.votedShowAnswer = false;
+      p.lives = 3;
+      p.isSpectator = false;
+    });
+
+    // Filter words pool to exclude used words in this session
+    room.usedWords = room.usedWords || [];
+    let wordsPool = words.filter(w => !room.usedWords.includes(w.hindi));
+
+    // Safeguard: if pool is exhausted or too small, reset it
+    const minNeeded = room.gameMode === 'survival' ? 50 : room.totalRounds;
+    if (wordsPool.length < minNeeded) {
+      room.usedWords = [];
+      wordsPool = [...words];
+    }
+
     const shuffledWords = shuffleArray(wordsPool);
     if (room.gameMode === 'survival') {
       room.roundWords = shuffledWords;
     } else {
       room.roundWords = shuffledWords.slice(0, room.totalRounds);
     }
+
+    // Add selected words to usedWords tracking so they don't repeat in the next match
+    room.roundWords.forEach(w => {
+      if (!room.usedWords.includes(w.hindi)) {
+        room.usedWords.push(w.hindi);
+      }
+    });
 
     if (room.gameMode === 'survival') {
       Object.values(room.players).forEach(p => {
@@ -869,6 +941,45 @@ io.on('connection', (socket) => {
     room.round = 0;
     io.to(roomCode).emit('game_started');
     startNextRound(roomCode);
+  });
+
+  // Return to Lobby (Host only)
+  socket.on('return_to_lobby', ({ code }) => {
+    const roomCode = (code || '').toUpperCase().trim();
+    const room = rooms[roomCode];
+    if (!room) return socket.emit('error_message', 'Room not found.');
+    if (room.hostId !== socket.id) return socket.emit('error_message', 'Only the host can return to lobby.');
+
+    if (room.timer) {
+      clearInterval(room.timer);
+      room.timer = null;
+    }
+
+    room.gameState = 'lobby';
+    room.round = 0;
+    room.calledNumbers = [];
+    
+    // Reset all player match scores & states
+    Object.values(room.players).forEach(p => {
+      p.score = 0;
+      p.roundScore = 0;
+      p.hasGuessed = false;
+      p.votedShowAnswer = false;
+      p.lives = 3;
+      p.isReady = false;
+      p.bingoBoard = null;
+      p.completedLines = 0;
+      p.matchWins = 0;
+      p.isSpectator = false;
+    });
+
+    io.to(roomCode).emit('chat_message', {
+      sender: 'System',
+      message: 'Host returned everyone to the Lobby.',
+      system: true
+    });
+
+    broadcastRoomUpdate(roomCode);
   });
 
   // Bingo: Submit Board
@@ -992,7 +1103,7 @@ io.on('connection', (socket) => {
     if (!player || player.hasGuessed) return;
 
     const sanitizedGuess = guess.toLowerCase().trim();
-    const isCorrect = room.currentWord.english.some(ans => ans.toLowerCase().trim() === sanitizedGuess);
+    const isCorrect = room.currentWord.english.some(ans => areWordsEquivalent(sanitizedGuess, ans));
 
     if (isCorrect) {
       player.hasGuessed = true;
