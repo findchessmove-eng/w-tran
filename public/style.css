@@ -1680,8 +1680,37 @@ body {
 .bingo-grid-wrapper {
   display: flex;
   justify-content: center;
-  margin: 20px 0;
+  margin: 15px 0;
   width: 100%;
+}
+
+.bingo-card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+}
+
+.bingo-col-headers {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.col-head {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  border: 1.5px solid #6366f1;
+  color: #fbbf24;
+  font-size: 1.5rem;
+  font-weight: 900;
+  border-radius: 10px;
+  padding: 6px 0;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+  letter-spacing: 1px;
 }
 
 .bingo-board-grid {
@@ -1692,6 +1721,16 @@ body {
   width: 100%;
   max-width: 520px;
   aspect-ratio: 1 / 1;
+}
+
+.bingo-cell.free-space {
+  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%) !important;
+  border-color: #f59e0b !important;
+  color: #ffffff !important;
+  text-align: center;
+  font-size: 1.15rem;
+  line-height: 1.1;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.35) !important;
 }
 
 .bingo-cell {
@@ -1770,6 +1809,34 @@ body {
 @keyframes strikeIn {
   from { width: 0%; }
   to { width: 85%; }
+}
+
+/* Last Called / Pressed Square Highlight (Distinct Vibrant Cyan & Halo) */
+.bingo-cell.last-called {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%) !important;
+  border: 3px solid #38bdf8 !important;
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.9), inset 0 0 10px rgba(56, 189, 248, 0.4) !important;
+  color: #38bdf8 !important;
+  font-weight: 900 !important;
+  transform: scale(1.06) !important;
+  animation: lastCalledPulse 1.5s infinite alternate ease-in-out;
+  z-index: 5;
+}
+
+.bingo-cell.last-called::before {
+  background-color: #38bdf8 !important;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.9) !important;
+}
+
+@keyframes lastCalledPulse {
+  0% {
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.6), inset 0 0 6px rgba(56, 189, 248, 0.3);
+    border-color: #38bdf8;
+  }
+  100% {
+    box-shadow: 0 0 28px rgba(56, 189, 248, 1), inset 0 0 14px rgba(56, 189, 248, 0.7);
+    border-color: #a5f3fc;
+  }
 }
 
 /* Glowing green highlight and pop animation for cells in completed lines */
@@ -1873,44 +1940,15 @@ body {
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
 }
 
-/* Active turn indicators */
-.turn-banner.your-turn {
-  background: #fca5a5 !important;
-  color: #b91c1c !important;
-  border: 2px solid #ef4444 !important;
-  font-weight: 800;
-  animation: turnPulse 1.2s infinite alternate ease-in-out;
-}
-
-@keyframes turnPulse {
-  from { box-shadow: 0 0 4px rgba(239, 68, 68, 0.1); transform: scale(1); }
-  to { box-shadow: 0 0 16px rgba(239, 68, 68, 0.45); transform: scale(1.03); }
-}
-
-.turn-banner.auto-caller-active {
-  background: rgba(14, 165, 233, 0.12) !important;
-  border: 2px solid var(--accent) !important;
-  color: var(--accent) !important;
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15) !important;
-  animation: turnPulseBlue 1.5s infinite alternate ease-in-out;
-}
-
-@keyframes turnPulseBlue {
-  from { box-shadow: 0 0 4px rgba(14, 165, 233, 0.05); }
-  to { box-shadow: 0 0 12px rgba(14, 165, 233, 0.25); }
-}
-
-/* Global body active turn soft red theme transition */
+/* Active Red Turn Theme for Player's Turn */
 body.bingo-my-turn-active {
-  background: radial-gradient(circle at top, #ffffff 0%, #fee2e2 100%) !important;
   background-color: #fee2e2 !important;
 }
 
-/* Play Card Dark Red Theme when it is my turn (Works perfectly on mobile/tablets!) */
 .bingo-my-turn-active .play-card {
-  background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%) !important;
-  border-color: #ef4444 !important;
-  box-shadow: 0 10px 30px rgba(185, 28, 28, 0.25) !important;
+  background: #991b1b !important;
+  border: 2px solid #ef4444 !important;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3) !important;
   color: #ffffff !important;
 }
 
@@ -1918,38 +1956,45 @@ body.bingo-my-turn-active {
 .bingo-my-turn-active .play-card h3,
 .bingo-my-turn-active .play-card p,
 .bingo-my-turn-active .play-card .subtitle,
-.bingo-my-turn-active .play-card .bingo-my-lines,
+.bingo-my-turn-active .play-card .stats-label,
+.bingo-my-turn-active .play-card .stats-value,
 .bingo-my-turn-active .play-card #bingo-my-lines {
   color: #ffffff !important;
 }
 
-/* Turn unlit header letters translucent white */
-.bingo-my-turn-active .play-card .bingo-letter {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  color: rgba(255, 255, 255, 0.4) !important;
-}
-
-/* Glowing amber lit header letters */
-.bingo-my-turn-active .play-card .bingo-letter.lit {
-  background: #f59e0b !important;
+.turn-banner.my-turn {
+  background: #dc2626 !important;
   color: #ffffff !important;
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.8) !important;
-  text-shadow: 0 0 8px #ffffff !important;
-  border-color: #ffffff !important;
+  border: 2px solid #fca5a5 !important;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);
 }
 
-/* Snappy white keys for active uncalled cells */
-.bingo-my-turn-active .play-card .bingo-cell:not(.called) {
+.turn-banner.waiting-turn {
+  background: #f8fafc !important;
+  color: #334155 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  font-weight: 600;
+}
+
+.turn-banner.spectating {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border: 1.5px solid #cbd5e1 !important;
+  font-weight: 600;
+}
+
+.bingo-my-turn-active .play-card .bingo-cell.clickable {
   background: #ffffff !important;
-  color: #7f1d1d !important;
+  color: #991b1b !important;
   border-color: #fca5a5 !important;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
 }
 
 .bingo-my-turn-active .play-card .bingo-cell.clickable:hover {
   background: #fef2f2 !important;
-  transform: scale(1.05);
+  transform: scale(1.04);
+  border-color: #ef4444 !important;
 }
 
 /* Score scoreboard layout for Bingo letters */
@@ -2045,7 +2090,7 @@ body.flash-red-active {
   0% { background: #ef4444 !important; background-color: #ef4444 !important; }
   40% { background: #dc2626 !important; background-color: #dc2626 !important; }
 /* -------------------------------------------------------------
-   AVATAR SELECTION STYLING
+   VECTOR GAMER AVATAR SELECTION STYLING
    ------------------------------------------------------------- */
 .avatar-select-section {
   margin-bottom: 20px;
@@ -2058,25 +2103,31 @@ body.flash-red-active {
   gap: 14px;
   background: #ffffff;
   border: 1.5px solid var(--glass-border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 10px 16px;
   margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .avatar-preview-circle {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #e0e7ff 0%, #fae8ff 100%);
-  border: 2px solid var(--primary);
+  border: 2.5px solid #38bdf8;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.35);
   user-select: none;
+  overflow: hidden;
+  flex-shrink: 0;
   animation: avatarPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.avatar-preview-circle svg {
+  width: 65%;
+  height: 65%;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
 @keyframes avatarPop {
@@ -2092,9 +2143,10 @@ body.flash-red-active {
 }
 
 .avatar-preview-name {
-  font-weight: 700;
-  font-size: 0.95rem;
+  font-weight: 800;
+  font-size: 1.05rem;
   color: var(--text-main);
+  letter-spacing: 0.3px;
 }
 
 .avatar-preview-hint {
@@ -2104,40 +2156,43 @@ body.flash-red-active {
 
 .avatar-options-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
-  gap: 8px;
-  max-height: 140px;
+  grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+  gap: 10px;
+  max-height: 155px;
   overflow-y: auto;
-  padding: 4px 2px;
+  padding: 6px 2px;
 }
 
 .avatar-option-btn {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: #ffffff;
-  border: 1.5px solid var(--glass-border);
-  font-size: 1.5rem;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: 2px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  padding: 8px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-option-btn svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
 }
 
 .avatar-option-btn:hover {
   transform: scale(1.18);
-  border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
   z-index: 2;
 }
 
 .avatar-option-btn.selected {
-  background: #e0e7ff;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary);
-  transform: scale(1.1);
+  box-shadow: 0 0 0 3px #ffffff, 0 0 16px rgba(56, 189, 248, 0.6);
+  transform: scale(1.12);
 }
 
 /* Avatar badge in lists and scoreboard */
@@ -2145,15 +2200,40 @@ body.flash-red-active {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #e0e7ff 0%, #fae8ff 100%);
-  border: 1px solid var(--glass-border);
+  border: 2px solid #38bdf8;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
-  margin-right: 6px;
+  margin-right: 8px;
   flex-shrink: 0;
   user-select: none;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.player-avatar svg {
+  width: 65%;
+  height: 65%;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+}
+
+/* Pattern Target Goal Banner */
+.bingo-pattern-goal-badge {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  border: 1.5px solid #6366f1;
+  color: #e0e7ff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+  display: inline-block;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  letter-spacing: 0.5px;
+}
+
+.bingo-pattern-goal-badge span {
+  color: #fbbf24;
 }
 
 /* -------------------------------------------------------------
@@ -2351,17 +2431,122 @@ body.flash-red-active {
   to { opacity: 1; transform: scale(1); }
 }
 
+/* Smooth Cascade Pop Ripple for Randomize */
+@keyframes cellPopRipple {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.6);
+    background: #6366f1;
+    color: transparent;
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.1);
+    background: #38bdf8;
+    color: #ffffff;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    background: #334155;
+    color: #ffffff;
+  }
+}
+
+.bingo-cell.ripple-pop {
+  animation: cellPopRipple 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Floating Ball Pop Announcer */
+.bingo-pop-announcer {
+  position: fixed;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px) scale(0.7);
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  border: 2px solid #38bdf8;
+  border-radius: 999px;
+  padding: 8px 22px 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(56, 189, 248, 0.5);
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bingo-pop-announcer.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.bingo-pop-ball {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #fbbf24 0%, #ea580c 100%);
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(251, 191, 36, 0.6);
+  flex-shrink: 0;
+  animation: ballSpinPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes ballSpinPop {
+  0% { transform: scale(0.4) rotate(-90deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.bingo-pop-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.bingo-pop-caller {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bingo-pop-call-val {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #38bdf8;
+  letter-spacing: 0.5px;
+}
+
 .bingo-round-modal-card {
   width: 100%;
   max-width: 480px;
   background: #ffffff;
-  border-radius: 20px;
-  padding: 24px;
+  border-radius: 24px;
+  padding: 26px;
   text-align: center;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-  border: 2px solid var(--primary);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(99, 102, 241, 0.2);
+  border: 2.5px solid var(--primary);
   max-height: 90vh;
   overflow-y: auto;
+  animation: modalSpringPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes modalSpringPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .modal-header-badge {

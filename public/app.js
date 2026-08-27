@@ -17,10 +17,41 @@ let bingoNextNumber = 1;
 let myBingoBoard = [];
 let calledNumbers = [];
 let currentTurnPlayerId = null;
-// Avatar Configuration
-const DEFAULT_AVATARS = ['🐱', '🐶', '🦊', '🦁', '🐼', '🐯', '🦄', '🐲', '🤖', '👾', '🚀', '👑', '⚡', '🎯', '🥷', '🍕', '🌮', '🍦'];
-let selectedAvatar = localStorage.getItem('shabd_anuvad_avatar') || '🐱';
+// 16 Cool Gamer Vector Avatars (High-contrast, sleek cyberpunk/esports badges)
+const COOL_AVATARS = [
+  { id: 'cyber_ninja', name: 'Cyber Ninja', bg: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)', border: '#38bdf8', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5v2a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5z"/><path d="M8 11h8"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M4 18v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="1" fill="#38bdf8"/></svg>' },
+  { id: 'dragon_blaze', name: 'Dragon Blaze', bg: 'linear-gradient(135deg, #f59e0b 0%, #dc2626 100%)', border: '#fbbf24', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/><path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="#fde047"/></svg>' },
+  { id: 'cyber_skull', name: 'Cyber Skull', bg: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', border: '#f472b6', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1.5" fill="#22d3ee"/><circle cx="15" cy="12" r="1.5" fill="#f43f5e"/><path d="M8 20v-2h8v2"/><path d="M12.5 17l-.5-1-.5 1"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></svg>' },
+  { id: 'mecha_titan', name: 'Mecha Titan', bg: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)', border: '#818cf8', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="3"/><path d="M12 2v3"/><line x1="8" y1="12" x2="16" y2="12" stroke="#38bdf8" stroke-width="3"/><path d="M9 16h6"/><circle cx="2" cy="12" r="1.5" fill="white"/><circle cx="22" cy="12" r="1.5" fill="white"/></svg>' },
+  { id: 'frost_wolf', name: 'Frost Wolf', bg: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)', border: '#67e8f9', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 8 21 9 17 14 18 20 12 17 6 20 7 14 3 9 9 8 12 2"/><circle cx="12" cy="12" r="2" fill="#a5f3fc"/></svg>' },
+  { id: 'phoenix_flame', name: 'Phoenix Flame', bg: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)', border: '#fb923c', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 1-4.5 4.5 1 6.5L12 17l-5.5 3 1-6.5L3 9l6-1z"/><path d="M12 7v6l3-1"/></svg>' },
+  { id: 'shadow_rogue', name: 'Shadow Rogue', bg: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', border: '#94a3b8', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8v12l8-4 8 4V10a8 8 0 0 0-8-8z"/><circle cx="9" cy="10" r="1.5" fill="#f87171"/><circle cx="15" cy="10" r="1.5" fill="#f87171"/></svg>' },
+  { id: 'cyber_samurai', name: 'Cyber Samurai', bg: 'linear-gradient(135deg, #ef4444 0%, #991b1b 100%)', border: '#f87171', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2v17.5c0 1.4-1.1 2.5-2.5 2.5h0c-1.4 0-2.5-1.1-2.5-2.5V2"/><path d="M6 9l6-4 6 4"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="8" y1="19" x2="16" y2="19"/></svg>' },
+  { id: 'astral_mage', name: 'Astral Mage', bg: 'linear-gradient(135deg, #a855f7 0%, #6b21a8 100%)', border: '#c084fc', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 6.5L21 11l-5 4.5 1.5 7L12 19l-5.5 3.5L8 15.5 3 11l6.5-2.5z"/><circle cx="12" cy="12" r="3" fill="#fde047"/></svg>' },
+  { id: 'toxic_viper', name: 'Toxic Viper', bg: 'linear-gradient(135deg, #10b981 0%, #047857 100%)', border: '#34d399', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2z"/><path d="M8 12s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1.5" fill="#a7f3d0"/><circle cx="15" cy="9" r="1.5" fill="#a7f3d0"/></svg>' },
+  { id: 'space_trooper', name: 'Space Trooper', bg: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', border: '#60a5fa', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 0 0-9 9v4a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-4a9 9 0 0 0-9-9z"/><ellipse cx="12" cy="11" rx="6" ry="3" fill="#fbbf24"/></svg>' },
+  { id: 'valkyrie_storm', name: 'Valkyrie Storm', bg: 'linear-gradient(135deg, #f59e0b 0%, #b45309 100%)', border: '#fcd34d', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="#fef08a"/></svg>' },
+  { id: 'demon_warlord', name: 'Demon Warlord', bg: 'linear-gradient(135deg, #be123c 0%, #881337 100%)', border: '#fb7185', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l3 5m11-5l-3 5"/><path d="M12 21a8 8 0 0 0 8-8c0-3-2-6-5-7l-3 3-3-3C6 7 4 10 4 13a8 8 0 0 0 8 8z"/><circle cx="9" cy="13" r="1.5" fill="#f43f5e"/><circle cx="15" cy="13" r="1.5" fill="#f43f5e"/></svg>' },
+  { id: 'laser_cat', name: 'Laser Cat', bg: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', border: '#f472b6', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V6l4 3 4-4 4 4 4-3v5a8 8 0 1 1-16 0z"/><rect x="6" y="9" width="12" height="4" rx="1" fill="#38bdf8"/></svg>' },
+  { id: 'glitch_phantom', name: 'Glitch Phantom', bg: 'linear-gradient(135deg, #14b8a6 0%, #0f766e 100%)', border: '#2dd4bf', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/><circle cx="9" cy="10" r="1" fill="#67e8f9"/><circle cx="15" cy="10" r="1" fill="#67e8f9"/></svg>' },
+  { id: 'apex_champion', name: 'Apex Champion', bg: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)', border: '#facc15', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H8c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-1c-.55 0-1-.45-1-1v-2.34"/><path d="M18 4H6v7a6 6 0 0 0 12 0V4z" fill="#fef08a"/></svg>' }
+];
+
+let selectedAvatar = localStorage.getItem('shabd_anuvad_avatar') || 'cyber_ninja';
 let voiceCallerEnabled = true;
+
+function getAvatarData(avatarId) {
+  return COOL_AVATARS.find(a => a.id === avatarId) || COOL_AVATARS[0];
+}
+
+function renderAvatarHtml(avatarId, customClass = '', customStyle = '') {
+  const av = getAvatarData(avatarId);
+  return `
+    <div class="player-avatar ${customClass}" style="background: ${av.bg}; border-color: ${av.border}; ${customStyle}" title="${av.name}">
+      ${av.svg}
+    </div>
+  `;
+}
 
 function initAvatarPicker() {
   const grid = document.getElementById('avatar-options-grid');
@@ -29,104 +60,48 @@ function initAvatarPicker() {
   if (!grid) return;
 
   grid.innerHTML = '';
-  DEFAULT_AVATARS.forEach(avatar => {
+  COOL_AVATARS.forEach(av => {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = `avatar-option-btn ${avatar === selectedAvatar ? 'selected' : ''}`;
-    btn.textContent = avatar;
+    btn.className = `avatar-option-btn ${av.id === selectedAvatar ? 'selected' : ''}`;
+    btn.title = av.name;
+    btn.style.background = av.bg;
+    btn.style.borderColor = av.border;
+    btn.innerHTML = av.svg;
     btn.addEventListener('click', () => {
-      selectedAvatar = avatar;
-      localStorage.setItem('shabd_anuvad_avatar', avatar);
-      if (display) display.textContent = avatar;
-      if (nameDisplay) nameDisplay.textContent = `Avatar Selected: ${avatar}`;
+      selectedAvatar = av.id;
+      localStorage.setItem('shabd_anuvad_avatar', av.id);
+      if (display) {
+        display.style.background = av.bg;
+        display.style.borderColor = av.border;
+        display.innerHTML = av.svg;
+      }
+      if (nameDisplay) nameDisplay.textContent = av.name;
       document.querySelectorAll('.avatar-option-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
     });
     grid.appendChild(btn);
   });
 
-  if (display) display.textContent = selectedAvatar;
-  if (nameDisplay) nameDisplay.textContent = `Avatar Selected: ${selectedAvatar}`;
-}
-
-// Helper: Determine Bingo Letter (B-I-N-G-O) from number 1-25
-function getBingoLetter(num) {
-  if (num >= 1 && num <= 5) return 'B';
-  if (num >= 6 && num <= 10) return 'I';
-  if (num >= 11 && num <= 15) return 'N';
-  if (num >= 16 && num <= 20) return 'G';
-  return 'O';
-}
-
-// Real-Life Bingo Speech Synthesis Voice Announcer
-function speakBingoCall(number) {
-  if (!voiceCallerEnabled || !('speechSynthesis' in window)) return;
-  try {
-    window.speechSynthesis.cancel();
-    const num = parseInt(number);
-    const letter = getBingoLetter(num);
-    let phrase = `${letter} ${num}!`;
-    if (num < 10) phrase = `${letter} ${num}! Single digit ${num}!`;
-    else {
-      const tens = Math.floor(num / 10);
-      const ones = num % 10;
-      phrase = `${letter} ${num}... ${tens}, ${ones}, ${num}!`;
-    }
-    const utterance = new SpeechSynthesisUtterance(phrase);
-    utterance.rate = 1.05;
-    utterance.pitch = 1.05;
-    window.speechSynthesis.speak(utterance);
-  } catch (e) {}
-}
-
-// Real-Life 3D Bingo Ball Drop Animator
-function updateBingoBallShowcase(number) {
-  const ball = document.getElementById('bingo-drawn-ball');
-  const ballLetter = document.getElementById('ball-letter');
-  const ballNum = document.getElementById('ball-number');
-  const announcement = document.getElementById('bingo-caller-announcement');
-  
-  const letter = getBingoLetter(number);
-  if (ballLetter) ballLetter.textContent = letter;
-  if (ballNum) ballNum.textContent = number;
-  if (announcement) announcement.textContent = `Ball Called: ${letter}-${number}!`;
-  
-  if (ball) {
-    ball.classList.remove('drawn-pop');
-    void ball.offsetWidth; // trigger reflow
-    ball.classList.add('drawn-pop');
+  const activeAv = getAvatarData(selectedAvatar);
+  if (display) {
+    display.style.background = activeAv.bg;
+    display.style.borderColor = activeAv.border;
+    display.innerHTML = activeAv.svg;
   }
+  if (nameDisplay) nameDisplay.textContent = activeAv.name;
 }
 
-// Master Called Board Tray (1 to 25)
-function renderMasterBoard(calledList) {
-  const grid = document.getElementById('master-board-grid');
-  const countSpan = document.getElementById('master-called-count');
-  if (!grid) return;
-  
-  if (countSpan) countSpan.textContent = calledList.length;
-  
-  const latestNum = calledList.length > 0 ? calledList[calledList.length - 1] : null;
-  grid.innerHTML = '';
-  for (let i = 1; i <= 25; i++) {
-    const badge = document.createElement('div');
-    const isCalled = calledList.includes(i);
-    const isLatest = (i === latestNum);
-    badge.className = `master-ball-badge ${isCalled ? 'called' : ''} ${isLatest ? 'latest' : ''}`;
-    badge.textContent = i;
-    grid.appendChild(badge);
-  }
+// Helper to get formatted 75-Ball label (e.g. B-7, I-22, N-38, G-54, O-69)
+function get75BallLabel(num) {
+  if (num === 'FREE' || num === 'free') return 'FREE ⭐';
+  const n = parseInt(num);
+  if (n <= 15) return `B-${n}`;
+  if (n <= 30) return `I-${n}`;
+  if (n <= 45) return `N-${n}`;
+  if (n <= 60) return `G-${n}`;
+  return `O-${n}`;
 }
-
-window.toggleMasterBoard = function() {
-  const grid = document.getElementById('master-board-grid');
-  const btn = document.getElementById('master-board-toggle-btn');
-  if (grid) {
-    const isHidden = (grid.style.display === 'none' || !grid.style.display);
-    grid.style.display = isHidden ? 'grid' : 'none';
-    if (btn) btn.textContent = isHidden ? 'Hide Tray ▲' : 'Show Tray ▼';
-  }
-};
 
 // Play a quick ink stamp dab sound
 function playDabSound() {
@@ -152,15 +127,12 @@ window.selectGameType = function(type) {
   selectedGameType = type;
   
   const translateCard = document.getElementById('select-game-translate');
-  const bingoCard = document.getElementById('select-game-bingo');
+  const bingo25Card = document.getElementById('select-game-bingo25');
+  const bingo75Card = document.getElementById('select-game-bingo75');
   
-  if (type === 'bingo') {
-    translateCard.classList.remove('active');
-    bingoCard.classList.add('active');
-  } else {
-    translateCard.classList.add('active');
-    bingoCard.classList.remove('active');
-  }
+  if (translateCard) translateCard.classList.toggle('active', type === 'translate');
+  if (bingo25Card) bingo25Card.classList.toggle('active', type === 'bingo25');
+  if (bingo75Card) bingo75Card.classList.toggle('active', type === 'bingo75');
 };
 
 // DOM Elements: Navigation
@@ -450,6 +422,12 @@ function showScreen(screenKey) {
       screens[key].classList.remove('active');
     }
   });
+
+  // Guarantee Bingo setup grid renders if switching to setup
+  if (screenKey === 'bingoSetup') {
+    renderBingoSetupGrid();
+    updateSetupStatus();
+  }
 }
 
 // Show Custom Alert Popup
@@ -604,7 +582,7 @@ function handleChatSend(inputElement) {
   if (message === '') return;
   
   socket.emit('send_chat', { code: currentRoomCode, message: message });
-  inputElement.value = '';
+    inputElement.value = '';
 }
 
 // --- Event Listeners ---
@@ -616,18 +594,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const savedUsername = localStorage.getItem('shabd_anuvad_username');
   if (savedUsername) {
     inputUsername.value = savedUsername;
-  }
-  
-  // Voice toggle button
-  const btnVoiceToggle = document.getElementById('btn-bingo-voice-toggle');
-  if (btnVoiceToggle) {
-    btnVoiceToggle.addEventListener('click', () => {
-      voiceCallerEnabled = !voiceCallerEnabled;
-      const statusText = document.getElementById('voice-toggle-status');
-      const icon = document.getElementById('voice-toggle-icon');
-      if (statusText) statusText.textContent = voiceCallerEnabled ? 'ON' : 'OFF';
-      if (icon) icon.textContent = voiceCallerEnabled ? '🔊' : '🔇';
-    });
   }
   
   // Parse direct room URL code, e.g. /room/ABCD
@@ -674,6 +640,10 @@ inputUsername.addEventListener('keypress', (e) => {
   }
 });
 
+inputRoomCode.addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+});
+
 inputRoomCode.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
     btnJoinRoom.click();
@@ -714,16 +684,15 @@ lobbyRoomCodeBadge.addEventListener('click', copyRoomCode);
 
 btnStartGame.addEventListener('click', () => {
   if (!isHost) return;
-  
-  if (selectedGameType === 'bingo') {
-    const turnTimer = document.getElementById('bingo-timer-select').value;
-    const matchRounds = document.getElementById('bingo-rounds-select').value;
-    const mode = document.getElementById('bingo-mode-select').value;
+
+  const isBingo = (selectedGameType === 'bingo' || selectedGameType === 'bingo25' || selectedGameType === 'bingo75');
+  if (isBingo) {
+    const turnTimer = document.getElementById('bingo-timer-select') ? document.getElementById('bingo-timer-select').value : 0;
+    const matchRounds = document.getElementById('bingo-rounds-select') ? document.getElementById('bingo-rounds-select').value : 5;
     socket.emit('start_game', {
       code: currentRoomCode,
       bingoTurnTimer: turnTimer,
-      bingoMatchRounds: matchRounds,
-      bingoMode: mode
+      bingoMatchRounds: matchRounds
     });
     return;
   }
@@ -738,7 +707,7 @@ btnStartGame.addEventListener('click', () => {
     roundTime: roundTime
   });
   
-  // Pre-focus guess input immediately on host click gesture to open soft keyboard
+  // Pre-focus guess input immediately on mobile
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   if (isMobile) {
     guessInput.focus();
@@ -766,7 +735,6 @@ gameChatInput.addEventListener('keypress', (e) => {
 });
 
 // Auto-focus guess input when clicking/tapping anywhere on the game board
-// Auto-focus guess input when clicking/tapping anywhere on the game board
 function handleScreenGameTap(e) {
   if (
     e.target.tagName !== 'BUTTON' && 
@@ -788,15 +756,14 @@ const btnReturnLobby = document.getElementById('btn-return-lobby');
 if (btnRestartMatch) {
   btnRestartMatch.addEventListener('click', () => {
     if (!isHost || !currentRoomCode) return;
-    if (selectedGameType === 'bingo') {
-      const turnTimer = document.getElementById('bingo-timer-select').value;
-      const matchRounds = document.getElementById('bingo-rounds-select').value;
-      const mode = document.getElementById('bingo-mode-select').value;
+    const isBingo = (selectedGameType === 'bingo' || selectedGameType === 'bingo25' || selectedGameType === 'bingo75');
+    if (isBingo) {
+      const turnTimer = document.getElementById('bingo-timer-select') ? document.getElementById('bingo-timer-select').value : 0;
+      const matchRounds = document.getElementById('bingo-rounds-select') ? document.getElementById('bingo-rounds-select').value : 5;
       socket.emit('start_game', {
         code: currentRoomCode,
         bingoTurnTimer: turnTimer,
-        bingoMatchRounds: matchRounds,
-        bingoMode: mode
+        bingoMatchRounds: matchRounds
       });
     } else {
       const roundTime = document.getElementById('timer-select').value;
@@ -864,6 +831,8 @@ socket.on('error_message', (message) => {
 // 2. Room State Updates
 socket.on('room_update', (data) => {
   currentRoomCode = data.code;
+  const isBingo = (data.gameType === 'bingo' || data.gameType === 'bingo25' || data.gameType === 'bingo75');
+  selectedGameType = data.gameType || 'translate';
   
   // Dynamically update URL to match the active room path
   if (data.gameState === 'lobby' || data.gameState === 'playing' || data.gameState === 'round_end' || data.gameState === 'placement') {
@@ -873,12 +842,21 @@ socket.on('room_update', (data) => {
     }
   }
 
+  // Toggle Column headers: visible in 75-Ball, hidden in Bingo 1-25
+  const colHeaders = document.querySelector('.bingo-col-headers');
+  if (colHeaders) {
+    colHeaders.style.display = (data.gameType === 'bingo75') ? 'grid' : 'none';
+  }
+
+  // Sync my personal bingo board
+  if (data.myBingoBoard) {
+    myBingoBoard = data.myBingoBoard;
+  }
+
   // Verify Host status
   isHost = (socket.id === data.hostId);
   
-  if (data.gameType === 'bingo') {
-    selectedGameType = 'bingo';
-    
+  if (isBingo) {
     // Toggle lobby settings panels
     const tGroup = document.getElementById('translate-settings-group');
     const bGroup = document.getElementById('bingo-settings-group');
@@ -901,7 +879,7 @@ socket.on('room_update', (data) => {
         const li = document.createElement('li');
         li.innerHTML = `
           <div class="player-name-wrapper">
-            <div class="player-avatar">${p.avatar || '🐱'}</div>
+            ${renderAvatarHtml(p.avatar, '', 'width:28px; height:28px; margin-right:8px;')}
             <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
           </div>
           ${isPlayerHost ? '<span class="player-role-badge">Host</span>' : ''}
@@ -920,6 +898,9 @@ socket.on('room_update', (data) => {
     } 
     else if (data.gameState === 'placement') {
       showScreen('bingoSetup');
+      renderBingoSetupGrid();
+      updateSetupStatus();
+
       // Render setup ready status list
       const statusContainer = document.getElementById('bingo-players-ready-status');
       if (statusContainer) {
@@ -928,7 +909,10 @@ socket.on('room_update', (data) => {
           const div = document.createElement('div');
           div.className = 'player-ready-item';
           div.innerHTML = `
-            <span>${p.username} ${p.id === socket.id ? '(You)' : ''}</span>
+            <div style="display:flex; align-items:center;">
+              ${renderAvatarHtml(p.avatar, '', 'width:24px; height:24px; font-size:0.8rem;')}
+              <span>${p.username} ${p.id === socket.id ? '(You)' : ''}</span>
+            </div>
             <span class="ready-badge ${p.isReady ? 'ready' : 'not-ready'}">${p.isReady ? 'Ready 👍' : 'Placing... ✍️'}</span>
           `;
           statusContainer.appendChild(div);
@@ -972,25 +956,19 @@ socket.on('room_update', (data) => {
       const isMyTurn = data.currentTurnPlayerId === socket.id;
       const turnBanner = document.getElementById('bingo-turn-banner');
       
-      if (data.bingoMode === 'real_life') {
-        turnBanner.textContent = `🎙️ Auto-Caller is drawing numbers...`;
-        turnBanner.className = 'turn-banner auto-caller-active';
+      const timerStr = (data.bingoTurnTimerVal > 0 && data.timeLeft > 0) ? ` (${data.timeLeft}s)` : '';
+      if (me && me.isSpectator) {
+        turnBanner.className = 'turn-banner spectating';
+        turnBanner.textContent = `👁️ You are Spectating. Wait for the next match!`;
         document.body.classList.remove('bingo-my-turn-active');
+      } else if (isMyTurn) {
+        turnBanner.className = 'turn-banner my-turn';
+        turnBanner.innerHTML = `🎯 It's <strong>YOUR turn</strong>! Pick a number on your board.${timerStr}`;
+        document.body.classList.add('bingo-my-turn-active');
       } else {
-        turnBanner.classList.remove('auto-caller-active');
-        if (me && me.isSpectator) {
-          turnBanner.textContent = `👁️ You are Spectating. Wait for the next match!`;
-          turnBanner.className = 'turn-banner';
-          document.body.classList.remove('bingo-my-turn-active');
-        } else if (isMyTurn) {
-          turnBanner.textContent = `⭐ It's Your Turn! Call a number.`;
-          turnBanner.className = 'turn-banner your-turn';
-          document.body.classList.add('bingo-my-turn-active');
-        } else {
-          turnBanner.textContent = `It's ${activeName}'s Turn.`;
-          turnBanner.className = 'turn-banner';
-          document.body.classList.remove('bingo-my-turn-active');
-        }
+        turnBanner.className = 'turn-banner waiting-turn';
+        turnBanner.innerHTML = `⏳ Waiting for <strong>${activeName}</strong> to call a number...${timerStr}`;
+        document.body.classList.remove('bingo-my-turn-active');
       }
 
       // Draw scoreboard
@@ -1010,7 +988,7 @@ socket.on('room_update', (data) => {
 
         li.innerHTML = `
           <div class="player-score-info" style="display:flex; align-items:center;">
-            <div class="player-avatar" style="width:24px; height:24px; font-size:0.9rem;">${p.avatar || '🐱'}</div>
+            ${renderAvatarHtml(p.avatar, '', 'width:26px; height:26px; margin-right:6px;')}
             <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
             ${p.id === data.hostId ? '<span class="player-role-badge" style="font-size:0.6rem; padding:1px 4px; margin-left:4px;">Host</span>' : ''}
             <span class="match-wins-badge" style="margin-left:5px; font-size:0.75rem; color:var(--warning); font-weight:bold;">🏆 ${p.matchWins || 0}</span>
@@ -1140,8 +1118,8 @@ socket.on('room_update', (data) => {
         }
 
         li.innerHTML = `
-          <div class="player-score-info">
-            <div class="player-avatar" style="width:24px; height:24px; font-size:0.9rem;">${p.avatar || '🐱'}</div>
+          <div class="player-score-info" style="display:flex; align-items:center;">
+            ${renderAvatarHtml(p.avatar, '', 'width:24px; height:24px; margin-right:6px;')}
             <span style="font-weight: ${isMe ? 'bold' : 'normal'}">${p.username} ${isMe ? '(You)' : ''}</span>
             ${isPlayerHost ? '<span class="player-role-badge" style="font-size:0.6rem; padding:1px 4px;">Host</span>' : ''}
             ${livesHtml}
@@ -1438,6 +1416,12 @@ socket.on('round_ended', (data) => {
   guessFeedback.className = 'guess-feedback correct';
 });
 
+// Bingo Card Assigned event (Receive authentic 75-Ball card from server)
+socket.on('bingo_card_assigned', ({ board }) => {
+  myBingoBoard = board;
+  renderBingoPlayGrid(myBingoBoard, calledNumbers);
+});
+
 // 9. Game Over Rank Presentation
 socket.on('game_over', (data) => {
   showScreen('gameover');
@@ -1488,7 +1472,7 @@ socket.on('game_over', (data) => {
     li.innerHTML = `
       <div style="display:flex; align-items:center;">
         <span class="rank-badge">${idx + 1}</span>
-        <span class="player-avatar" style="width:28px; height:28px; font-size:1.05rem; margin-left:6px;">${p.avatar || '🐱'}</span>
+        ${renderAvatarHtml(p.avatar, '', 'width:28px; height:28px; margin-left:6px;')}
         <span style="font-weight:700;">${p.username}</span>
       </div>
       <span class="final-score-points">${p.score} ${unitText}</span>
@@ -1586,9 +1570,7 @@ function updatePlayersRing(players, currentTurnPlayerId, gameMode) {
     node.innerHTML = `
       <div class="ring-player-avatar-wrapper">
         <div class="ring-player-hearts">${heartsHtml}</div>
-        <div class="ring-player-avatar" style="background: ${getAvatarColor(p.username)}">
-          ${p.username.charAt(0).toUpperCase()}
-        </div>
+        ${renderAvatarHtml(p.avatar, 'ring-player-avatar', 'width:44px; height:44px;')}
       </div>
       <span class="ring-player-name" style="font-weight: ${isMe ? 'bold' : 'normal'}; border-color: ${isMe ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}">
         ${p.username} ${isMe ? '(You)' : ''}
@@ -1723,9 +1705,10 @@ function getCompletedCellIndices(board, calledList) {
   if (!board || board.length !== 25) return [];
 
   const completedIndices = new Set();
+  const calledSet = new Set([...calledList, 'FREE', 'free']);
 
   const checkAndAdd = (indices) => {
-    const isComplete = indices.every(idx => calledList.includes(board[idx]));
+    const isComplete = indices.every(idx => calledSet.has(board[idx]) || board[idx] === 'FREE');
     if (isComplete) {
       indices.forEach(idx => completedIndices.add(idx));
     }
@@ -1774,7 +1757,7 @@ function renderBingoPlayGrid(myBoard, calledList) {
         
         if (cell.classList.contains('clickable') && currentTurnPlayerId === socket.id) {
           const num = parseInt(cell.dataset.number);
-          if (num) {
+          if (num && num >= 1 && num <= 75) {
             socket.emit('call_bingo_number', {
               code: currentRoomCode,
               number: num
@@ -1787,35 +1770,42 @@ function renderBingoPlayGrid(myBoard, calledList) {
     for (let i = 0; i < 25; i++) {
       const cell = document.createElement('div');
       cell.className = 'bingo-cell play-mode';
-      const num = myBoard[i] || '';
-      cell.textContent = num;
-      cell.dataset.number = num;
       gridEl.appendChild(cell);
     }
   }
 
+  const latestNum = (calledList && calledList.length > 0) ? calledList[calledList.length - 1] : null;
+
   // Update existing cells in-place smoothly without destroying elements
   for (let i = 0; i < 25; i++) {
     const cell = gridEl.children[i];
-    const num = myBoard[i] || '';
-    
-    // Crucial: Update text content and dataset number dynamically for new tournament rounds
+    const val = myBoard[i];
+
+    if (val === 'FREE' || val === 'free' || i === 12 && (val === 'FREE' || !val)) {
+      cell.className = 'bingo-cell play-mode free-space called';
+      cell.innerHTML = '⭐<br><small style="font-size:0.65rem; font-weight:800; letter-spacing:1px;">FREE</small>';
+      cell.dataset.number = 'FREE';
+      continue;
+    }
+
+    const num = parseInt(val) || '';
+    cell.dataset.number = num;
     if (cell.textContent !== String(num)) {
       cell.textContent = num;
     }
-    cell.dataset.number = num;
     
     const isCalled = calledList.includes(num);
+    const isLatest = (num === latestNum);
     const isLineCompleted = completedCells.includes(i);
 
     if (isLineCompleted) {
-      if (!cell.classList.contains('line-completed')) {
-        cell.className = 'bingo-cell play-mode called line-completed';
-      }
+      cell.className = isLatest 
+        ? 'bingo-cell play-mode called line-completed last-called' 
+        : 'bingo-cell play-mode called line-completed';
     } else if (isCalled) {
-      if (!cell.classList.contains('called')) {
-        cell.className = 'bingo-cell play-mode called';
-      }
+      cell.className = isLatest 
+        ? 'bingo-cell play-mode called last-called' 
+        : 'bingo-cell play-mode called';
     } else {
       // Cell is active (uncalled)
       let className = 'bingo-cell play-mode';
@@ -1829,25 +1819,49 @@ function renderBingoPlayGrid(myBoard, calledList) {
   }
 }
 
+// Floating Ball Pop Announcer Helper
+function showFloatingBallPop(callerName, displayValue) {
+  const announcer = document.getElementById('bingo-pop-announcer');
+  const ballIcon = document.getElementById('bingo-pop-ball-icon');
+  const callerEl = document.getElementById('bingo-pop-caller-name');
+  const valueEl = document.getElementById('bingo-pop-ball-value');
+  
+  if (announcer && ballIcon && valueEl) {
+    if (callerEl) callerEl.textContent = callerName || 'Player Called';
+    valueEl.textContent = displayValue;
+    
+    // Pick column letter or target icon
+    if (typeof displayValue === 'string' && displayValue.includes('-')) {
+      ballIcon.textContent = displayValue.split('-')[0];
+    } else {
+      ballIcon.textContent = '🎯';
+    }
+
+    announcer.classList.remove('active');
+    void announcer.offsetWidth; // trigger reflow
+    announcer.classList.add('active');
+
+    if (window.popAnnouncerTimeout) clearTimeout(window.popAnnouncerTimeout);
+    window.popAnnouncerTimeout = setTimeout(() => {
+      announcer.classList.remove('active');
+    }, 2200);
+  }
+}
+
 // Bind Bingo setup action buttons
 const btnBingoRandom = document.getElementById('btn-bingo-random');
 const btnBingoClear = document.getElementById('btn-bingo-clear');
+let randomizeInterval = null;
 
 if (btnBingoRandom) {
   btnBingoRandom.addEventListener('click', () => {
-    // Crucial for iOS/iPad: Initialize and resume AudioContext inside user interaction block synchronously
     let ctx = null;
     try {
       ctx = getAudioContext();
-      if (ctx && ctx.state === 'suspended') {
-        ctx.resume();
-      }
-    } catch (err) {}
+      if (ctx && ctx.state === 'suspended') ctx.resume();
+    } catch (e) {}
 
-    // Clear any active randomize animation
     if (randomizeInterval) clearInterval(randomizeInterval);
-    
-    // Disable control buttons during fill
     btnBingoRandom.disabled = true;
     if (btnBingoClear) btnBingoClear.disabled = true;
 
@@ -1861,10 +1875,20 @@ if (btnBingoRandom) {
     // Clear board first to start fresh
     bingoSetupBoard = Array(25).fill(null);
     bingoNextNumber = 1;
-    renderBingoSetupGrid();
-    updateSetupStatus();
+    const gridEl = document.getElementById('bingo-setup-grid');
+    if (gridEl) {
+      for (let i = 0; i < 25; i++) {
+        const c = gridEl.children[i];
+        if (c) {
+          c.textContent = '';
+          c.classList.remove('placed');
+        }
+      }
+    }
+    const statusEl = document.getElementById('bingo-setup-status-msg');
+    if (statusEl) statusEl.textContent = 'Filling board... 🎲';
 
-    // Create a random order of cell indices (0 to 24) to fill staggered
+    // Create random order of cell indices (0 to 24) to fill staggered
     const cellIndices = Array.from({ length: 25 }, (_, i) => i);
     for (let i = cellIndices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -1876,14 +1900,10 @@ if (btnBingoRandom) {
       if (step >= 25) {
         clearInterval(randomizeInterval);
         randomizeInterval = null;
-        
-        // Re-enable control buttons
         btnBingoRandom.disabled = false;
         if (btnBingoClear) btnBingoClear.disabled = false;
-        
-        // Final success sound and auto-ready trigger
+
         bingoNextNumber = 26;
-        renderBingoSetupGrid();
         updateSetupStatus();
         playSuccessSound();
         return;
@@ -1892,33 +1912,37 @@ if (btnBingoRandom) {
       const cellIdx = cellIndices[step];
       const num = numbers[step];
       bingoSetupBoard[cellIdx] = num;
-      renderBingoSetupGrid();
+      
+      // Direct DOM update on just the 1 target cell (60fps ultra smooth)
+      if (gridEl && gridEl.children[cellIdx]) {
+        const cell = gridEl.children[cellIdx];
+        cell.textContent = num;
+        cell.classList.add('placed');
+      }
 
-      // Play snappy ascending note using the pre-fetched context
+      // Lightweight snappy placement tone
       if (ctx && ctx.state !== 'suspended') {
         try {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
-          const freq = 320 + step * 16; // ascending frequency
-          osc.frequency.setValueAtTime(freq, ctx.currentTime);
+          osc.frequency.setValueAtTime(260 + step * 24, ctx.currentTime);
           gain.gain.setValueAtTime(0.04, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start();
-          osc.stop(ctx.currentTime + 0.08);
+          osc.stop(ctx.currentTime + 0.04);
         } catch (e) {}
       }
 
       step++;
-    }, 45); // ~1.1s total duration
+    }, 24); // ~600ms total smooth progression
   });
 }
 
 if (btnBingoClear) {
   btnBingoClear.addEventListener('click', () => {
-    // Stop any active randomize animation
     if (randomizeInterval) {
       clearInterval(randomizeInterval);
       randomizeInterval = null;
@@ -1958,15 +1982,14 @@ socket.on('bingo_start_placement', () => {
   bingoSetupBoard = Array(25).fill(null);
   bingoNextNumber = 1;
   
-  // Enable setup buttons in case they were disabled from a previous round
   if (btnBingoRandom) btnBingoRandom.disabled = false;
   if (btnBingoClear) btnBingoClear.disabled = false;
   
   const setupInstructions = document.getElementById('bingo-setup-instructions');
   if (setupInstructions) {
-    setupInstructions.textContent = 'Tap the empty squares below to place numbers 1 to 25. First square gets 1, then 2, etc.';
+    setupInstructions.textContent = 'Tap squares to place numbers 1 to 25, or click Randomize 🎲.';
   }
-
+  
   showScreen('bingoSetup');
   renderBingoSetupGrid();
   updateSetupStatus();
@@ -1975,18 +1998,19 @@ socket.on('bingo_start_placement', () => {
 });
 
 socket.on('bingo_board_accepted', () => {
-  if (btnBingoRandom) btnBingoRandom.disabled = true;
-  if (btnBingoClear) btnBingoClear.disabled = true;
-  
-  const setupInstructions = document.getElementById('bingo-setup-instructions');
-  if (setupInstructions) {
-    setupInstructions.textContent = 'Your board has been submitted successfully! Waiting for other players to finish...';
+  const statusEl = document.getElementById('bingo-setup-status-msg');
+  if (statusEl) {
+    statusEl.innerHTML = `<span style="color: var(--success); font-weight: bold;">Board complete! Waiting for other players... 👍</span>`;
   }
+  const waitingList = document.getElementById('bingo-setup-waiting-list');
+  if (waitingList) waitingList.style.display = 'block';
 });
 
 socket.on('bingo_game_started', ({ currentTurnPlayerId: turnId }) => {
   currentTurnPlayerId = turnId;
-  myBingoBoard = [...bingoSetupBoard];
+  if (!myBingoBoard || myBingoBoard.length !== 25) {
+    myBingoBoard = [...bingoSetupBoard];
+  }
   calledNumbers = [];
   previousLinesCount = 0; // Reset tracked completed lines count
   
@@ -2000,18 +2024,24 @@ socket.on('bingo_game_started', ({ currentTurnPlayerId: turnId }) => {
 socket.on('bingo_number_called', ({ number, calledNumbers: list }) => {
   calledNumbers = list;
   playSuccessSound();
-  updateBingoBallShowcase(number);
-  speakBingoCall(number);
-  renderMasterBoard(calledNumbers);
+
+  const displayVal = (selectedGameType === 'bingo75') ? get75BallLabel(number) : `Number ${number}`;
+  
+  // Pop floating notification
+  const activeP = (lastPlayersList && lastPlayersList.find(p => p.id === currentTurnPlayerId));
+  const callerName = activeP ? activeP.username : 'Player';
+  showFloatingBallPop(callerName, displayVal);
 
   const banner = document.getElementById('bingo-last-called');
   const container = document.getElementById('bingo-last-called-container');
   if (container && banner) {
     container.style.display = 'flex';
-    banner.textContent = number;
+    banner.textContent = (selectedGameType === 'bingo75') ? get75BallLabel(number) : number;
     banner.classList.add('pulse');
     setTimeout(() => banner.classList.remove('pulse'), 800);
   }
+
+  renderBingoPlayGrid(myBingoBoard, calledNumbers);
 });
 
 socket.on('bingo_round_ended', (data) => {
@@ -2033,10 +2063,10 @@ socket.on('bingo_round_ended', (data) => {
         item.className = 'round-winner-item';
         item.innerHTML = `
           <div class="winner-user-col">
-            <span class="player-avatar">${w.avatar || '🐱'}</span>
+            ${renderAvatarHtml(w.avatar, '', 'width:28px; height:28px;')}
             <span>${w.username}</span>
           </div>
-          <span class="winner-badge">🏆 5 Lines! (+1 Win)</span>
+          <span class="winner-badge">🏆 Winner! (+1 Win)</span>
         `;
         winnersList.appendChild(item);
       });
@@ -2051,7 +2081,7 @@ socket.on('bingo_round_ended', (data) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><span class="rank-badge" style="font-size:0.75rem; width:20px; height:20px;">${idx + 1}</span></td>
-        <td class="standings-user-col"><span class="player-avatar" style="width:24px; height:24px; font-size:0.9rem;">${p.avatar || '🐱'}</span> <span>${p.username}</span></td>
+        <td class="standings-user-col">${renderAvatarHtml(p.avatar, '', 'width:24px; height:24px;')} <span>${p.username}</span></td>
         <td><strong style="color:var(--warning);">🏆 ${p.matchWins}</strong></td>
         <td>${p.completedLines} / 5</td>
       `;

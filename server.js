@@ -50,15 +50,11 @@ app.get('/room/:code', (req, res) => {
 // Global state for active rooms
 const rooms = {};
 
-// Helper to generate a unique 4-letter room code
+// Helper to generate a unique 4-digit numeric room code (e.g. 4829)
 function generateRoomCode() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let code;
   do {
-    code = '';
-    for (let i = 0; i < 4; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+    code = Math.floor(1000 + Math.random() * 9000).toString();
   } while (rooms[code]);
   return code;
 }
@@ -108,32 +104,72 @@ function generateHint(word, level = 0) {
   return hint.split('').join(' ');
 }
 
-// Helper to calculate completed lines on a 5x5 Bingo board (flat 25-array)
+// Generate authentic Classic 75-Ball Bingo Card (B:1-15, I:16-30, N:31-45 with FREE, G:46-60, O:61-75)
+function generate75BallCard() {
+  function getSample(min, max, count) {
+    const pool = [];
+    for (let i = min; i <= max; i++) pool.push(i);
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool.slice(0, count);
+  }
+
+  const bCol = getSample(1, 15, 5);
+  const iCol = getSample(16, 30, 5);
+  const nCol = getSample(31, 45, 4); // Middle is FREE space
+  const gCol = getSample(46, 60, 5);
+  const oCol = getSample(61, 75, 5);
+
+  const card = [];
+  for (let row = 0; row < 5; row++) {
+    card.push(bCol[row]);
+    card.push(iCol[row]);
+    if (row === 2) {
+      card.push('FREE');
+    } else {
+      card.push(nCol[row > 2 ? row - 1 : row]);
+    }
+    card.push(gCol[row]);
+    card.push(oCol[row]);
+  }
+  return card;
+}
+
+// Helper to get formatted 75-Ball label (e.g. B-7, I-22, N-38, G-54, O-69)
+function get75BallLabel(num) {
+  if (num === 'FREE' || num === 'free') return 'FREE ⭐';
+  const n = parseInt(num);
+  if (n <= 15) return `B-${n}`;
+  if (n <= 30) return `I-${n}`;
+  if (n <= 45) return `N-${n}`;
+  if (n <= 60) return `G-${n}`;
+  return `O-${n}`;
+}
+
+// Helper to calculate completed lines on a 5x5 Bingo board (flat 25-array with FREE center space)
 function checkBingoLines(board, calledNumbers) {
-  if (!board) return 0;
+  if (!board || !Array.isArray(board) || board.length !== 25) return 0;
   
   let lines = 0;
-
-  // Helper to check if a list of indices are all called
-  const checkIndices = (indices) => indices.every(idx => calledNumbers.includes(board[idx]));
+  const calledSet = new Set([...calledNumbers, 'FREE', 'free']);
+  const checkIndices = (indices) => indices.every(idx => calledSet.has(board[idx]) || board[idx] === 'FREE');
 
   // Check 5 rows
   for (let r = 0; r < 5; r++) {
     const rowIndices = [r*5, r*5+1, r*5+2, r*5+3, r*5+4];
     if (checkIndices(rowIndices)) lines++;
   }
-
   // Check 5 columns
   for (let c = 0; c < 5; c++) {
     const colIndices = [c, c+5, c+10, c+15, c+20];
     if (checkIndices(colIndices)) lines++;
   }
-
-  // Check Diagonal 1 (top-left to bottom-right)
+  // Check Diagonal 1
   const diag1Indices = [0, 6, 12, 18, 24];
   if (checkIndices(diag1Indices)) lines++;
-
-  // Check Diagonal 2 (top-right to bottom-left)
+  // Check Diagonal 2
   const diag2Indices = [4, 8, 12, 16, 20];
   if (checkIndices(diag2Indices)) lines++;
 
@@ -150,85 +186,17 @@ function startBingoTurnTimer(roomCode) {
     room.timer = null;
   }
 
+  // If timer is disabled (0), no countdown needed
   if (!room.bingoTurnTimerVal || room.bingoTurnTimerVal <= 0) {
-    return; // No timer enabled
+    room.timeLeft = 0;
+    return;
   }
 
   room.timeLeft = room.bingoTurnTimerVal;
 
   room.timer = setInterval(() => {
-    room.timeLeft -= 1;
-
-    if (room.timeLeft <= 0) {
-      clearInterval(room.timer);
-      room.timer = null;
-      
-      // Auto-call a remaining number
-      autoCallBingoNumber(roomCode);
-    } else {
-      io.to(roomCode).emit('timer_tick', { timeLeft: room.timeLeft });
-    }
-  }, 1000);
-}
-
-// Auto-call a random number if active player runs out of turn time
-function autoCallBingoNumber(roomCode) {
-  const room = rooms[roomCode];
-  if (!room || room.gameState !== 'playing') return;
-
-  const currentTurnPlayer = room.players[room.currentTurnPlayerId];
-  if (!currentTurnPlayer) return;
-
-  // Find remaining uncalled numbers
-  const allNumbers = Array.from({ length: 25 }, (_, i) => i + 1);
-  const remainingNumbers = allNumbers.filter(n => !room.calledNumbers.includes(n));
-
-  if (remainingNumbers.length === 0) return;
-
-  const randomIndex = Math.floor(Math.random() * remainingNumbers.length);
-  const selectedNumber = remainingNumbers[randomIndex];
-
-  io.to(roomCode).emit('chat_message', {
-    sender: 'System',
-    message: `${currentTurnPlayer.username} ran out of time! System auto-called ${selectedNumber}.`,
-    system: true
-  });
-
-  processCalledNumber(roomCode, selectedNumber);
-}
-
-// Start the automatic number caller interval for Real Life Mode
-function startBingoAutoCaller(roomCode) {
-  const room = rooms[roomCode];
-  if (!room || room.gameType !== 'bingo' || room.gameState !== 'playing') return;
-
-  if (room.timer) {
-    clearInterval(room.timer);
-    room.timer = null;
-  }
-
-  // Draw first number after a short delay (e.g. 2.2 seconds) so players can prepare
-  setTimeout(() => {
     const r = rooms[roomCode];
-    if (!r || r.gameState !== 'playing' || r.bingoMode !== 'real_life') return;
-    
-    const uncalled = Array.from({ length: 25 }, (_, i) => i + 1)
-      .filter(n => !r.calledNumbers.includes(n));
-    if (uncalled.length > 0) {
-      const firstNum = uncalled[Math.floor(Math.random() * uncalled.length)];
-      io.to(roomCode).emit('chat_message', {
-        sender: 'Caller 🎙️',
-        message: `📢 First number is ${firstNum}!`,
-        system: true
-      });
-      processCalledNumber(roomCode, firstNum);
-    }
-  }, 2200);
-
-  // Then start recurring draw interval
-  room.timer = setInterval(() => {
-    const r = rooms[roomCode];
-    if (!r || r.gameState !== 'playing' || r.bingoMode !== 'real_life') {
+    if (!r || r.gameState !== 'playing') {
       if (r && r.timer) {
         clearInterval(r.timer);
         r.timer = null;
@@ -236,25 +204,33 @@ function startBingoAutoCaller(roomCode) {
       return;
     }
 
-    const uncalled = Array.from({ length: 25 }, (_, i) => i + 1)
-      .filter(n => !r.calledNumbers.includes(n));
+    r.timeLeft -= 1;
+    io.to(roomCode).emit('timer_tick', { timeLeft: r.timeLeft });
 
-    if (uncalled.length === 0) {
-      clearInterval(room.timer);
-      room.timer = null;
-      return;
+    if (r.timeLeft <= 0) {
+      clearInterval(r.timer);
+      r.timer = null;
+
+      // Draw a random uncalled number (1 to 75)
+      const allNumbers = [];
+      for (let i = 1; i <= 75; i++) {
+        if (!r.calledNumbers.includes(i)) allNumbers.push(i);
+      }
+
+      if (allNumbers.length > 0) {
+        const timeoutNum = allNumbers[Math.floor(Math.random() * allNumbers.length)];
+        const currentTurnPlayer = r.players[r.currentTurnPlayerId];
+        const turnName = currentTurnPlayer ? currentTurnPlayer.username : 'Player';
+        io.to(roomCode).emit('chat_message', {
+          sender: 'System',
+          message: `⏰ ${turnName} ran out of time! Number ${timeoutNum} was randomly called.`,
+          system: true
+        });
+        processCalledNumber(roomCode, timeoutNum);
+      }
     }
-
-    const nextNum = uncalled[Math.floor(Math.random() * uncalled.length)];
-    io.to(roomCode).emit('chat_message', {
-      sender: 'Caller 🎙️',
-      message: `📢 Next number: ${nextNum}!`,
-      system: true
-    });
-    processCalledNumber(roomCode, nextNum);
-  }, 4500); // draw every 4.5 seconds
+  }, 1000);
 }
-
 
 // Function to send updated room state to all clients in the room
 function broadcastRoomUpdate(roomCode) {
@@ -289,7 +265,7 @@ function broadcastRoomUpdate(roomCode) {
   const totalPlayers = Object.keys(room.players).length;
   const showAnswerVotes = Object.values(room.players).filter(p => p.votedShowAnswer).length;
 
-  io.to(roomCode).emit('room_update', {
+  const basePayload = {
     code: roomCode,
     gameState: room.gameState,
     gameType: room.gameType || 'translate',
@@ -311,6 +287,14 @@ function broadcastRoomUpdate(roomCode) {
     // Bingo Specific
     calledNumbers: room.calledNumbers || [],
     bingoTurnTimerVal: room.bingoTurnTimerVal || 0
+  };
+
+  Object.keys(room.players).forEach(socketId => {
+    const p = room.players[socketId];
+    io.to(socketId).emit('room_update', {
+      ...basePayload,
+      myBingoBoard: p.bingoBoard || null
+    });
   });
 }
 
@@ -325,51 +309,21 @@ function processCalledNumber(roomCode, number) {
     room.timer = null;
   }
 
-  // Process called numbers queue (allowing chain bomb explosions)
-  let numbersToProcess = [number];
-  let bombHitOccurred = false;
-
-  while (numbersToProcess.length > 0) {
-    const num = numbersToProcess.shift();
-    if (!room.calledNumbers.includes(num)) {
-      room.calledNumbers.push(num);
-    }
-    
-    // Check if Chaos Mode is active and this number is a hidden bomb!
-    if (room.bingoMode === 'chaos' && room.bombNumbers && room.bombNumbers.includes(num)) {
-      bombHitOccurred = true;
-      // Find remaining uncalled numbers (not in calledNumbers and not already queued in numbersToProcess)
-      const uncalled = Array.from({ length: 25 }, (_, i) => i + 1)
-        .filter(n => !room.calledNumbers.includes(n) && !numbersToProcess.includes(n));
-      
-      if (uncalled.length > 0) {
-        const freeStrike = uncalled[Math.floor(Math.random() * uncalled.length)];
-        numbersToProcess.push(freeStrike);
-        
-        // Emit bomb detonation event so clients play explosion sound and flash
-        io.to(roomCode).emit('bingo_bomb_detonated', { bombNumber: num, freeStrikeNumber: freeStrike });
-        io.to(roomCode).emit('chat_message', {
-          sender: 'System',
-          message: `💥 BOMB DETONATED! Number ${num} exploded, also crossing off ${freeStrike} on all boards!`,
-          system: true
-        });
-      }
-    }
+  if (!room.calledNumbers.includes(number)) {
+    room.calledNumbers.push(number);
   }
 
-  if (!bombHitOccurred) {
-    // Notify clients about the standard called number and completed lines updates
-    io.to(roomCode).emit('bingo_number_called', {
-      number: number,
-      calledNumbers: room.calledNumbers
-    });
-  }
+  // Notify clients about the called number
+  io.to(roomCode).emit('bingo_number_called', {
+    number: number,
+    calledNumbers: room.calledNumbers
+  });
 
-  // Recalculate completed lines for all players
+  // Recalculate completed lines and winning status for all players (Classic 5 lines to win)
   const winners = [];
   Object.values(room.players).forEach(p => {
     p.completedLines = checkBingoLines(p.bingoBoard, room.calledNumbers);
-    p.score = p.completedLines; // Score is lines completed
+    p.score = p.completedLines;
 
     if (p.completedLines >= 5) {
       winners.push(p);
@@ -715,8 +669,12 @@ io.on('connection', (socket) => {
     // Choose 10 random words from words pool for the translate game
     const shuffledWords = [...words].sort(() => 0.5 - Math.random());
     const selectedWords = shuffledWords.slice(0, 10);
-
-    const typeOfGame = gameType === 'bingo' ? 'bingo' : 'translate';
+    let typeOfGame = 'translate';
+    if (gameType === 'bingo' || gameType === 'bingo25') {
+      typeOfGame = 'bingo25';
+    } else if (gameType === 'bingo75') {
+      typeOfGame = 'bingo75';
+    }
 
     rooms[roomCode] = {
       id: roomCode,
@@ -843,38 +801,66 @@ io.on('connection', (socket) => {
     if (room.hostId !== socket.id) return socket.emit('error_message', 'Only the host can start the game.');
     if (Object.keys(room.players).length < 1) return socket.emit('error_message', 'Not enough players.');
 
-    if (room.gameType === 'bingo') {
+    if (room.gameType === 'bingo75') {
       room.bingoTurnTimerVal = parseInt(data.bingoTurnTimer) || 0;
       const bRounds = parseInt(data.bingoMatchRounds) || 5;
-      room.totalRounds = Math.min(Math.max(bRounds, 3), 21); // enforce min 3, max 21 rounds for bingo
+      room.totalRounds = Math.min(Math.max(bRounds, 1), 21);
       room.round = 1;
-      room.bingoMode = data.bingoMode || 'classic';
-      room.gameState = 'placement';
-
-      // Pick Hidden Bomb numbers if Chaos mode is active
-      if (room.bingoMode === 'chaos') {
-        const pool = Array.from({ length: 25 }, (_, i) => i + 1);
-        for (let i = pool.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [pool[i], pool[j]] = [pool[j], pool[i]];
-        }
-        room.bombNumbers = pool.slice(0, 3);
-        console.log(`[Chaos Mode] Shuffled bomb numbers: ${room.bombNumbers}`);
-      } else {
-        room.bombNumbers = [];
-      }
-
-      if (room.bingoMode === 'duocall') {
-        room.duoCallCount = 0;
-      }
+      room.calledNumbers = [];
+      room.gameState = 'playing';
       
-      // Reset players states for Bingo Board Placement phase
+      // Automatically generate authentic 75-ball cards for everyone
+      const playerIds = Object.keys(room.players);
+      playerIds.forEach(id => {
+        const p = room.players[id];
+        p.bingoBoard = generate75BallCard();
+        p.isReady = true;
+        p.completedLines = 0;
+        p.score = 0;
+        p.matchWins = 0;
+        p.isSpectator = false;
+        io.to(id).emit('bingo_card_assigned', { board: p.bingoBoard });
+      });
+
+      room.turnOrder = [...playerIds];
+      room.turnIndex = 0;
+      room.currentTurnPlayerId = room.turnOrder[0];
+
+      io.to(roomCode).emit('bingo_game_started', {
+        currentTurnPlayerId: room.currentTurnPlayerId
+      });
+
+      const firstPlayer = room.players[room.currentTurnPlayerId];
+      io.to(roomCode).emit('chat_message', {
+        sender: 'System',
+        message: `🎯 Classic 75-Ball Bingo started! Everyone received their 75-ball card. It's ${firstPlayer ? firstPlayer.username : 'Player'}'s turn to call first!`,
+        system: true
+      });
+
+      broadcastRoomUpdate(roomCode);
+
+      if (room.bingoTurnTimerVal > 0) {
+        startBingoTurnTimer(roomCode);
+      }
+      return;
+    }
+
+    if (room.gameType === 'bingo' || room.gameType === 'bingo25') {
+      room.bingoTurnTimerVal = parseInt(data.bingoTurnTimer) || 0;
+      const bRounds = parseInt(data.bingoMatchRounds) || 5;
+      room.totalRounds = Math.min(Math.max(bRounds, 1), 21);
+      room.round = 1;
+      room.calledNumbers = [];
+      room.gameState = 'placement';
+      
+      // Reset players states for Bingo 1-25 Board Placement phase
       Object.values(room.players).forEach(p => {
         p.isReady = false;
         p.bingoBoard = null;
         p.completedLines = 0;
         p.score = 0;
-        p.matchWins = 0; // Reset wins
+        p.matchWins = 0;
+        p.isSpectator = false;
       });
 
       io.to(roomCode).emit('bingo_start_placement');
@@ -1058,33 +1044,37 @@ io.on('connection', (socket) => {
     broadcastRoomUpdate(roomCode);
   });
 
-  // Bingo: Call Number
+  // Bingo: Call Number (supports 1-25 for Bingo 1-25 and 1-75 for 75-Ball Bingo)
   socket.on('call_bingo_number', ({ code, number }) => {
     const roomCode = code.toUpperCase().trim();
     const room = rooms[roomCode];
-    if (!room || room.gameState !== 'playing' || room.gameType !== 'bingo') return;
+    if (!room || (room.gameType !== 'bingo' && room.gameType !== 'bingo25' && room.gameType !== 'bingo75') || room.gameState !== 'playing') return;
 
-    if (socket.id !== room.currentTurnPlayerId) {
-      return socket.emit('error_message', "It is not your turn to call a number!");
+    if (room.currentTurnPlayerId !== socket.id) {
+      return socket.emit('error_message', 'It is not your turn to call a number!');
     }
 
-    const n = parseInt(number);
-    if (isNaN(n) || n < 1 || n > 25) {
-      return socket.emit('error_message', 'Invalid number called.');
+    const num = parseInt(number);
+    const maxNum = (room.gameType === 'bingo75') ? 75 : 25;
+
+    if (isNaN(num) || num < 1 || num > maxNum) {
+      return socket.emit('error_message', `Please call a valid number between 1 and ${maxNum}.`);
     }
 
-    if (room.calledNumbers.includes(n)) {
-      return socket.emit('error_message', 'Number has already been called.');
+    if (room.calledNumbers.includes(num)) {
+      return socket.emit('error_message', `Number ${num} has already been called!`);
     }
 
-    const player = room.players[socket.id];
+    const currentTurnPlayer = room.players[socket.id];
+    const displayLabel = (room.gameType === 'bingo75') ? get75BallLabel(num) : num;
+
     io.to(roomCode).emit('chat_message', {
-      sender: 'System',
-      message: `${player.username} called ${n}!`,
-      system: true
+      sender: currentTurnPlayer ? currentTurnPlayer.username : 'Player',
+      message: `called ${displayLabel}!`,
+      system: false
     });
 
-    processCalledNumber(roomCode, n);
+    processCalledNumber(roomCode, num);
   });
 
   // 4. Submit Guess

@@ -42,10 +42,15 @@
                 <div class="game-card-title">Shabd Anuvad 🔤</div>
                 <div class="game-card-desc">Translate Hindi words to English. Fastest correct answer scores!</div>
               </div>
-              <div class="game-card" id="select-game-bingo" onclick="selectGameType('bingo')">
-                <div class="game-card-badge text-accent">NUMBERS</div>
+              <div class="game-card" id="select-game-bingo25" onclick="selectGameType('bingo25')">
+                <div class="game-card-badge text-accent">NUMBERS 1-25</div>
                 <div class="game-card-title">Bingo 1-25 🔢</div>
-                <div class="game-card-desc">Interactive 5x5 board. Tap squares to place 1-25. Spell B-I-N-G-O!</div>
+                <div class="game-card-desc">Place your own 1-25 numbers on the 5x5 board. First to 5 lines wins!</div>
+              </div>
+              <div class="game-card" id="select-game-bingo75" onclick="selectGameType('bingo75')">
+                <div class="game-card-badge text-accent">CLASSIC 75-BALL</div>
+                <div class="game-card-title">Classic 75-Ball 🎯</div>
+                <div class="game-card-desc">Instant authentic 75-ball card with FREE space. First to 5 lines wins!</div>
               </div>
             </div>
           </div>
@@ -83,8 +88,8 @@
 
           <div id="join-form-container" class="join-slide-down">
             <div class="form-group">
-              <label for="room-code-input">Enter Room Code</label>
-              <input type="text" id="room-code-input" placeholder="e.g. ABCD" maxlength="4" autocomplete="off" style="text-transform: uppercase;">
+              <label for="room-code-input">Enter 4-Digit Room Code</label>
+              <input type="text" id="room-code-input" placeholder="e.g. 4829" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
             </div>
             <button id="btn-join-room" class="btn btn-accent btn-block">Join Now</button>
           </div>
@@ -154,7 +159,7 @@
                 </div>
               </div>
 
-              <!-- Bingo Settings Group -->
+              <!-- Bingo Settings Group (Simple: Optional Timer & Rounds only) -->
               <div id="bingo-settings-group" style="display: none;">
                 <div class="form-group row">
                   <label for="bingo-timer-select">Turn Timer:</label>
@@ -169,21 +174,13 @@
                 <div class="form-group row" style="margin-top: 10px;">
                   <label for="bingo-rounds-select">Match Length:</label>
                   <select id="bingo-rounds-select" class="select-styled">
+                    <option value="1">1 Round (Single Game)</option>
+                    <option value="3">Best of 3</option>
                     <option value="5" selected>Best of 5</option>
                     <option value="7">Best of 7</option>
                     <option value="9">Best of 9</option>
                     <option value="11">Best of 11</option>
-                    <option value="13">Best of 13</option>
                     <option value="15">Best of 15</option>
-                  </select>
-                </div>
-                <div class="form-group row" style="margin-top: 10px;">
-                  <label for="bingo-mode-select">Game Mode:</label>
-                  <select id="bingo-mode-select" class="select-styled">
-                    <option value="classic" selected>Classic Turn-by-Turn</option>
-                    <option value="real_life">Real Life Hall Mode (Auto-Caller 🎙️)</option>
-                    <option value="chaos">Chaos Mode (Hidden Bombs 💣)</option>
-                    <option value="duocall">Duo-Call Mode (Double Turn ⚡)</option>
                   </select>
                 </div>
               </div>
@@ -342,38 +339,19 @@
         </div>
       </section>
 
-      <!-- BINGO GAMEPLAY SCREEN -->
+      <!-- BINGO GAMEPLAY SCREEN (Clean Classic 5x5 Bingo) -->
       <section id="screen-bingo-game" class="screen">
         <div class="game-grid">
           <!-- Main play area -->
           <div class="game-main-area">
             <div class="card glass play-card">
               <!-- BINGO Header Tracker (Neons lighting up) -->
-              <div class="bingo-top-bar">
-                <div class="bingo-letters-container">
-                  <span class="bingo-letter" data-letter="B">B</span>
-                  <span class="bingo-letter" data-letter="I">I</span>
-                  <span class="bingo-letter" data-letter="N">N</span>
-                  <span class="bingo-letter" data-letter="G">G</span>
-                  <span class="bingo-letter" data-letter="O">O</span>
-                </div>
-                <button id="btn-bingo-voice-toggle" class="btn btn-sm btn-secondary voice-toggle-btn" title="Toggle Voice Announcer">
-                  <span id="voice-toggle-icon">🔊</span> Voice Caller: <span id="voice-toggle-status">ON</span>
-                </button>
-              </div>
-
-              <!-- Real-Life Bingo Ball Caller Showcase -->
-              <div class="bingo-caller-showcase" id="bingo-caller-showcase">
-                <div class="bingo-ball-stage">
-                  <div class="bingo-drawn-ball" id="bingo-drawn-ball">
-                    <span class="ball-letter" id="ball-letter">🎯</span>
-                    <span class="ball-number" id="ball-number">--</span>
-                  </div>
-                </div>
-                <div class="caller-announcement">
-                  <span class="caller-tag">LIVE CALLER 🎙️</span>
-                  <div class="caller-text" id="bingo-caller-announcement">Waiting for first call...</div>
-                </div>
+              <div class="bingo-letters-container">
+                <span class="bingo-letter" data-letter="B">B</span>
+                <span class="bingo-letter" data-letter="I">I</span>
+                <span class="bingo-letter" data-letter="N">N</span>
+                <span class="bingo-letter" data-letter="G">G</span>
+                <span class="bingo-letter" data-letter="O">O</span>
               </div>
 
               <!-- Active Turn Banner -->
@@ -381,21 +359,28 @@
                 Waiting for game state...
               </div>
 
-              <!-- Bingo Board Grid -->
-              <div class="bingo-grid-wrapper">
-                <div id="bingo-game-grid" class="bingo-board-grid play-mode">
-                  <!-- Generated dynamically (25 cells) -->
+              <!-- Floating Ball Pop Announcer -->
+              <div id="bingo-pop-announcer" class="bingo-pop-announcer">
+                <div class="bingo-pop-ball" id="bingo-pop-ball-icon">🎯</div>
+                <div class="bingo-pop-text-wrapper">
+                  <span class="bingo-pop-caller" id="bingo-pop-caller-name">Player</span>
+                  <span class="bingo-pop-call-val" id="bingo-pop-ball-value">Called B-12</span>
                 </div>
               </div>
 
-              <!-- Master Board (1 to 25 History Tray) -->
-              <div class="master-board-section">
-                <div class="master-board-header" id="master-board-header" onclick="toggleMasterBoard()">
-                  <span class="master-title">📋 Master Called Board (<span id="master-called-count">0</span> / 25)</span>
-                  <span class="master-toggle-btn" id="master-board-toggle-btn">Show Tray ▼</span>
-                </div>
-                <div class="master-board-grid" id="master-board-grid" style="display: none;">
-                  <!-- Generated dynamically (numbers 1 to 25) -->
+              <!-- Bingo Card with Column Headers -->
+              <div class="bingo-grid-wrapper">
+                <div class="bingo-card-container">
+                  <div class="bingo-col-headers">
+                    <span class="col-head">B</span>
+                    <span class="col-head">I</span>
+                    <span class="col-head">N</span>
+                    <span class="col-head">G</span>
+                    <span class="col-head">O</span>
+                  </div>
+                  <div id="bingo-game-grid" class="bingo-board-grid play-mode">
+                    <!-- Generated dynamically (25 cells) -->
+                  </div>
                 </div>
               </div>
 
@@ -405,7 +390,7 @@
                   <span class="stats-value" id="bingo-my-lines">0 / 5</span>
                 </div>
                 <div class="stats-item" id="bingo-last-called-container" style="display: none;">
-                  <span class="stats-label">Last Called:</span>
+                  <span class="stats-label">Last Called Number:</span>
                   <span class="stats-value highlighted" id="bingo-last-called">-</span>
                 </div>
               </div>
