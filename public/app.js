@@ -1359,14 +1359,21 @@ socket.on('round_ended', (data) => {
   const countdownBar = document.getElementById('translate-countdown-bar');
 
   if (translateRoundModal && title && hindiWordEl && englishWordEl) {
-    title.textContent = `Round ${data.round || 1} Finished!`;
+    // Set prominent round winner announcement in modal
+    const scorers = data.roundScorers || [];
+    if (scorers.length > 0) {
+      const scorerNames = scorers.map(s => s.username).join(', ');
+      title.innerHTML = `🏆 <strong>${scorerNames}</strong> Won Round ${data.round || 1}!`;
+    } else {
+      title.textContent = `Round ${data.round || 1} Finished!`;
+    }
+
     hindiWordEl.textContent = data.hindiWord || promptHindiWord.textContent;
     englishWordEl.textContent = data.correctAnswer;
 
     // Render Scorers / Winner list
     if (scorersList) {
       scorersList.innerHTML = '';
-      const scorers = data.roundScorers || [];
       if (scorers.length > 0) {
         if (scorersTitle) scorersTitle.textContent = '🏆 Fastest Guesser(s)';
         scorers.forEach(s => {
@@ -1374,8 +1381,7 @@ socket.on('round_ended', (data) => {
           item.className = 'round-winner-item';
           item.innerHTML = `
             <div class="winner-user-col">
-              ${renderAvatarHtml(s.avatar, '', 'width:28px; height:28px;')}
-              <span>${s.username}</span>
+              <span style="font-weight: 800; font-size: 1.05rem;">${s.username}</span>
             </div>
             <span class="winner-badge">⚡ Correct! (+${s.roundScore || 10} pts)</span>
           `;
@@ -1395,8 +1401,8 @@ socket.on('round_ended', (data) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><span class="rank-badge" style="font-size:0.75rem; width:20px; height:20px;">${idx + 1}</span></td>
-          <td class="standings-user-col">${renderAvatarHtml(p.avatar, '', 'width:24px; height:24px;')} <span>${p.username}</span></td>
-          <td><strong style="color:var(--primary);">${p.score} pts</strong></td>
+          <td class="standings-user-col"><span style="font-weight: 700;">${p.username}</span></td>
+          <td><strong style="color:var(--primary); font-size: 1.05rem;">${p.score} pts</strong></td>
         `;
         standingsTbody.appendChild(tr);
       });
@@ -2051,28 +2057,33 @@ socket.on('bingo_round_ended', (data) => {
   const winnersList = document.getElementById('round-winners-list');
   const standingsTbody = document.getElementById('bingo-standings-tbody');
   const countdownBar = document.getElementById('round-countdown-bar');
+  const countdownLabel = document.getElementById('round-countdown-label');
   
   if (roundModal && title && winnersList && standingsTbody) {
-    title.textContent = `Round ${data.round} Result! (Best of ${data.totalRounds})`;
+    const winners = data.roundWinners || [];
+    if (winners.length > 0) {
+      const winnerNames = winners.map(w => w.username).join(', ');
+      title.innerHTML = `🏆 <strong>${winnerNames}</strong> Won Match ${data.round}!`;
+    } else {
+      title.textContent = `Match ${data.round} Finished! (Best of ${data.totalRounds})`;
+    }
     
     // Render round winners
     winnersList.innerHTML = '';
-    const winners = data.roundWinners || [];
     if (winners.length > 0) {
       winners.forEach(w => {
         const item = document.createElement('div');
         item.className = 'round-winner-item';
         item.innerHTML = `
           <div class="winner-user-col">
-            ${renderAvatarHtml(w.avatar, '', 'width:28px; height:28px;')}
-            <span>${w.username}</span>
+            <span style="font-weight: 800; font-size: 1.05rem;">${w.username}</span>
           </div>
           <span class="winner-badge">🏆 Winner! (+1 Win)</span>
         `;
         winnersList.appendChild(item);
       });
     } else {
-      winnersList.innerHTML = `<div style="color:var(--text-muted); font-size:0.9rem;">Round completed!</div>`;
+      winnersList.innerHTML = `<div style="color:var(--text-muted); font-size:0.9rem;">Match completed!</div>`;
     }
 
     // Render series standings
@@ -2082,12 +2093,14 @@ socket.on('bingo_round_ended', (data) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><span class="rank-badge" style="font-size:0.75rem; width:20px; height:20px;">${idx + 1}</span></td>
-        <td class="standings-user-col">${renderAvatarHtml(p.avatar, '', 'width:24px; height:24px;')} <span>${p.username}</span></td>
-        <td><strong style="color:var(--warning);">🏆 ${p.matchWins}</strong></td>
+        <td class="standings-user-col"><span style="font-weight: 700;">${p.username}</span></td>
+        <td><strong style="color:var(--warning); font-size: 1.05rem;">🏆 ${p.matchWins}</strong></td>
         <td>${p.completedLines} / 5</td>
       `;
       standingsTbody.appendChild(tr);
     });
+
+    if (countdownLabel) countdownLabel.textContent = `Next Match in 5s... ⏳`;
 
     // Animate countdown bar
     if (countdownBar) {
@@ -2102,6 +2115,23 @@ socket.on('bingo_round_ended', (data) => {
     roundModal.style.display = 'flex';
   }
 });
+
+// Close buttons for modals
+const btnCloseBingoRoundModal = document.getElementById('btn-close-bingo-round-modal');
+if (btnCloseBingoRoundModal) {
+  btnCloseBingoRoundModal.addEventListener('click', () => {
+    const roundModal = document.getElementById('bingo-round-modal');
+    if (roundModal) roundModal.style.display = 'none';
+  });
+}
+
+const btnCloseTranslateModal = document.getElementById('btn-close-translate-modal');
+if (btnCloseTranslateModal) {
+  btnCloseTranslateModal.addEventListener('click', () => {
+    const translateRoundModal = document.getElementById('translate-round-modal');
+    if (translateRoundModal) translateRoundModal.style.display = 'none';
+  });
+}
 
 socket.on('bingo_bomb_detonated', ({ bombNumber, freeStrikeNumber }) => {
   // Trigger screen flash animation

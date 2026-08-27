@@ -2089,7 +2089,8 @@ body.flash-red-active {
 @keyframes bodyFlashRed {
   0% { background: #ef4444 !important; background-color: #ef4444 !important; }
   40% { background: #dc2626 !important; background-color: #dc2626 !important; }
-
+  100% { background: transparent !important; }
+}
 
 /* Pattern Target Goal Banner */
 .bingo-pattern-goal-badge {
