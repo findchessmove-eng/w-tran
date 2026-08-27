@@ -1982,6 +1982,9 @@ if (btnBingoSendChat && bingoChatInput) {
 
 socket.on('bingo_start_placement', () => {
   closeAlert(); // Close any active popups/toasts
+  const roundModal = document.getElementById('bingo-round-modal');
+  if (roundModal) roundModal.style.display = 'none';
+
   if (randomizeInterval) {
     clearInterval(randomizeInterval);
     randomizeInterval = null;
@@ -2015,6 +2018,9 @@ socket.on('bingo_board_accepted', () => {
 
 socket.on('bingo_game_started', ({ currentTurnPlayerId: turnId }) => {
   currentTurnPlayerId = turnId;
+  const roundModal = document.getElementById('bingo-round-modal');
+  if (roundModal) roundModal.style.display = 'none';
+
   if (!myBingoBoard || myBingoBoard.length !== 25) {
     myBingoBoard = [...bingoSetupBoard];
   }

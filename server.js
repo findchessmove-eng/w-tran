@@ -380,32 +380,55 @@ function processCalledNumber(roomCode, number) {
       // Prepare for the next round
       room.round += 1;
 
-      // Start next board placement setup in 5 seconds
+      // Start next round setup in 5 seconds
       setTimeout(() => {
         if (!rooms[roomCode]) return;
-        room.gameState = 'placement';
         
-        // Generate new bomb numbers for the new round
-        if (room.bingoMode === 'chaos') {
-          const pool = Array.from({ length: 25 }, (_, i) => i + 1);
-          for (let i = pool.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [pool[i], pool[j]] = [pool[j], pool[i]];
+        if (room.gameType === 'bingo75') {
+          // In 75-Ball bingo, automatically assign cards and start next round directly
+          const playerIds = Object.keys(room.players);
+          playerIds.forEach(id => {
+            const p = room.players[id];
+            p.bingoBoard = generate75BallCard();
+            p.isReady = true;
+            p.completedLines = 0;
+            p.score = 0;
+            io.to(id).emit('bingo_card_assigned', { board: p.bingoBoard });
+          });
+          room.calledNumbers = [];
+          room.gameState = 'playing';
+          room.turnOrder = [...playerIds];
+          room.turnIndex = 0;
+          room.currentTurnPlayerId = room.turnOrder[0];
+          io.to(roomCode).emit('bingo_game_started', {
+            currentTurnPlayerId: room.currentTurnPlayerId
+          });
+          broadcastRoomUpdate(roomCode);
+        } else {
+          room.gameState = 'placement';
+          
+          // Generate new bomb numbers for the new round
+          if (room.bingoMode === 'chaos') {
+            const pool = Array.from({ length: 25 }, (_, i) => i + 1);
+            for (let i = pool.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            room.bombNumbers = pool.slice(0, 3);
           }
-          room.bombNumbers = pool.slice(0, 3);
-        }
-        if (room.bingoMode === 'duocall') {
-          room.duoCallCount = 0;
-        }
+          if (room.bingoMode === 'duocall') {
+            room.duoCallCount = 0;
+          }
 
-        Object.values(room.players).forEach(p => {
-          p.isReady = false;
-          p.bingoBoard = null;
-          p.completedLines = 0;
-          p.score = 0;
-        });
-        io.to(roomCode).emit('bingo_start_placement');
-        broadcastRoomUpdate(roomCode);
+          Object.values(room.players).forEach(p => {
+            p.isReady = false;
+            p.bingoBoard = null;
+            p.completedLines = 0;
+            p.score = 0;
+          });
+          io.to(roomCode).emit('bingo_start_placement');
+          broadcastRoomUpdate(roomCode);
+        }
       }, 5000);
 
       broadcastRoomUpdate(roomCode);
