@@ -472,17 +472,40 @@ function endRound(roomCode, consensusReached = false) {
 
   const correctAnswers = room.currentWord.english.map(w => w.toUpperCase()).join(', ');
   
+  // Collect players who scored this round
+  const roundScorers = Object.values(room.players)
+    .filter(p => p.hasGuessed)
+    .map(p => ({
+      username: p.username,
+      avatar: p.avatar || 'cyber_ninja',
+      roundScore: p.roundScore || 0,
+      score: p.score
+    }))
+    .sort((a, b) => b.roundScore - a.roundScore);
+
+  const standings = Object.values(room.players).map(p => ({
+    username: p.username,
+    avatar: p.avatar || 'cyber_ninja',
+    score: p.score,
+    lives: p.lives
+  })).sort((a, b) => b.score - a.score);
+
   io.to(roomCode).emit('round_ended', {
+    round: room.round,
+    totalRounds: room.totalRounds,
+    hindiWord: room.currentWord ? room.currentWord.hindi : '',
     correctAnswer: correctAnswers,
     consensus: consensusReached,
     reason: consensusReached ? 'consensus' : (room.timeLeft <= 0 ? 'timeout' : 'all_guessed'),
-    exploded: activePlayerFailed
+    exploded: activePlayerFailed,
+    roundScorers: roundScorers,
+    standings: standings
   });
 
   broadcastRoomUpdate(roomCode);
 
-  // Wait before starting the next round (1 second for survival mode, 5 seconds for classic)
-  const transitionDelay = room.gameMode === 'survival' ? 1000 : 5000;
+  // Wait before starting the next round (1 second for survival mode, 4.5 seconds for classic)
+  const transitionDelay = room.gameMode === 'survival' ? 1000 : 4500;
   setTimeout(() => {
     if (!rooms[roomCode]) return; // Room might have been closed
 

@@ -55,20 +55,7 @@
             </div>
           </div>
 
-          <!-- Avatar Selection Section -->
-          <div class="avatar-select-section">
-            <label class="section-label">Choose Your Avatar 🎭</label>
-            <div class="avatar-current-preview">
-              <div class="avatar-preview-circle" id="current-avatar-display">🐱</div>
-              <div class="avatar-preview-info">
-                <span class="avatar-preview-name" id="current-avatar-name">Cat Avatar</span>
-                <span class="avatar-preview-hint">Tap any icon below to change</span>
-              </div>
-            </div>
-            <div class="avatar-options-grid" id="avatar-options-grid">
-              <!-- Dynamically populated (🐱 🐶 🦊 🦁 🐼 🐯 🦄 🐲 🤖 👾 🚀 👑 ⚡ 🎯 🥷 🍕 🌮 🍦) -->
-            </div>
-          </div>
+
 
           <div class="form-group">
             <label for="username-input">Enter Your Username</label>
@@ -461,6 +448,56 @@
         </div>
       </section>
     </main>
+
+    <!-- Dedicated Translate Round Result Modal (Pop-up with Word, Scorers & Standings) -->
+    <div id="translate-round-modal" class="modal-overlay" style="display: none;">
+      <div class="card glass bingo-round-modal-card">
+        <div class="modal-header-badge">🏁 ROUND RESULT</div>
+        <h2 id="translate-round-modal-title">Round 1 Result!</h2>
+        
+        <!-- Word & Translation Showcase -->
+        <div class="round-word-showcase">
+          <div class="round-word-hindi" id="translate-modal-hindi">मौसम (Mausam)</div>
+          <div class="round-word-arrow">➔</div>
+          <div class="round-word-english" id="translate-modal-english">WEATHER</div>
+        </div>
+
+        <!-- Scorers List -->
+        <div class="round-winners-box">
+          <div class="box-title" id="translate-scorers-title">🏆 Fastest Guesser(s)</div>
+          <div class="round-winners-list" id="translate-scorers-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Standings Table -->
+        <div class="series-standings-box">
+          <div class="box-title">📊 Scoreboard Standings</div>
+          <div class="standings-table-wrapper">
+            <table class="standings-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Total Score</th>
+                </tr>
+              </thead>
+              <tbody id="translate-standings-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Next Round Countdown -->
+        <div class="round-countdown-box">
+          <div class="countdown-label" id="translate-countdown-label">Next Round in 4s... ⏳</div>
+          <div class="countdown-bar-wrapper">
+            <div id="translate-countdown-bar" class="countdown-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Dedicated Bingo Round Victory Modal (List-wise Winners with Avatars) -->
     <div id="bingo-round-modal" class="modal-overlay" style="display: none;">

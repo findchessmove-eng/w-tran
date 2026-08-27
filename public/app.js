@@ -17,79 +17,8 @@ let bingoNextNumber = 1;
 let myBingoBoard = [];
 let calledNumbers = [];
 let currentTurnPlayerId = null;
-// 16 Cool Gamer Vector Avatars (High-contrast, sleek cyberpunk/esports badges)
-const COOL_AVATARS = [
-  { id: 'cyber_ninja', name: 'Cyber Ninja', bg: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)', border: '#38bdf8', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5v2a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5z"/><path d="M8 11h8"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M4 18v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/><circle cx="12" cy="7" r="1" fill="#38bdf8"/></svg>' },
-  { id: 'dragon_blaze', name: 'Dragon Blaze', bg: 'linear-gradient(135deg, #f59e0b 0%, #dc2626 100%)', border: '#fbbf24', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/><path d="M12 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="#fde047"/></svg>' },
-  { id: 'cyber_skull', name: 'Cyber Skull', bg: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', border: '#f472b6', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1.5" fill="#22d3ee"/><circle cx="15" cy="12" r="1.5" fill="#f43f5e"/><path d="M8 20v-2h8v2"/><path d="M12.5 17l-.5-1-.5 1"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></svg>' },
-  { id: 'mecha_titan', name: 'Mecha Titan', bg: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)', border: '#818cf8', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="3"/><path d="M12 2v3"/><line x1="8" y1="12" x2="16" y2="12" stroke="#38bdf8" stroke-width="3"/><path d="M9 16h6"/><circle cx="2" cy="12" r="1.5" fill="white"/><circle cx="22" cy="12" r="1.5" fill="white"/></svg>' },
-  { id: 'frost_wolf', name: 'Frost Wolf', bg: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)', border: '#67e8f9', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 8 21 9 17 14 18 20 12 17 6 20 7 14 3 9 9 8 12 2"/><circle cx="12" cy="12" r="2" fill="#a5f3fc"/></svg>' },
-  { id: 'phoenix_flame', name: 'Phoenix Flame', bg: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)', border: '#fb923c', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6 6 1-4.5 4.5 1 6.5L12 17l-5.5 3 1-6.5L3 9l6-1z"/><path d="M12 7v6l3-1"/></svg>' },
-  { id: 'shadow_rogue', name: 'Shadow Rogue', bg: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', border: '#94a3b8', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 0-8 8v12l8-4 8 4V10a8 8 0 0 0-8-8z"/><circle cx="9" cy="10" r="1.5" fill="#f87171"/><circle cx="15" cy="10" r="1.5" fill="#f87171"/></svg>' },
-  { id: 'cyber_samurai', name: 'Cyber Samurai', bg: 'linear-gradient(135deg, #ef4444 0%, #991b1b 100%)', border: '#f87171', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2v17.5c0 1.4-1.1 2.5-2.5 2.5h0c-1.4 0-2.5-1.1-2.5-2.5V2"/><path d="M6 9l6-4 6 4"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="8" y1="19" x2="16" y2="19"/></svg>' },
-  { id: 'astral_mage', name: 'Astral Mage', bg: 'linear-gradient(135deg, #a855f7 0%, #6b21a8 100%)', border: '#c084fc', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 6.5L21 11l-5 4.5 1.5 7L12 19l-5.5 3.5L8 15.5 3 11l6.5-2.5z"/><circle cx="12" cy="12" r="3" fill="#fde047"/></svg>' },
-  { id: 'toxic_viper', name: 'Toxic Viper', bg: 'linear-gradient(135deg, #10b981 0%, #047857 100%)', border: '#34d399', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2z"/><path d="M8 12s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1.5" fill="#a7f3d0"/><circle cx="15" cy="9" r="1.5" fill="#a7f3d0"/></svg>' },
-  { id: 'space_trooper', name: 'Space Trooper', bg: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', border: '#60a5fa', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 0 0-9 9v4a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-4a9 9 0 0 0-9-9z"/><ellipse cx="12" cy="11" rx="6" ry="3" fill="#fbbf24"/></svg>' },
-  { id: 'valkyrie_storm', name: 'Valkyrie Storm', bg: 'linear-gradient(135deg, #f59e0b 0%, #b45309 100%)', border: '#fcd34d', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="#fef08a"/></svg>' },
-  { id: 'demon_warlord', name: 'Demon Warlord', bg: 'linear-gradient(135deg, #be123c 0%, #881337 100%)', border: '#fb7185', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l3 5m11-5l-3 5"/><path d="M12 21a8 8 0 0 0 8-8c0-3-2-6-5-7l-3 3-3-3C6 7 4 10 4 13a8 8 0 0 0 8 8z"/><circle cx="9" cy="13" r="1.5" fill="#f43f5e"/><circle cx="15" cy="13" r="1.5" fill="#f43f5e"/></svg>' },
-  { id: 'laser_cat', name: 'Laser Cat', bg: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', border: '#f472b6', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V6l4 3 4-4 4 4 4-3v5a8 8 0 1 1-16 0z"/><rect x="6" y="9" width="12" height="4" rx="1" fill="#38bdf8"/></svg>' },
-  { id: 'glitch_phantom', name: 'Glitch Phantom', bg: 'linear-gradient(135deg, #14b8a6 0%, #0f766e 100%)', border: '#2dd4bf', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/><circle cx="9" cy="10" r="1" fill="#67e8f9"/><circle cx="15" cy="10" r="1" fill="#67e8f9"/></svg>' },
-  { id: 'apex_champion', name: 'Apex Champion', bg: 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)', border: '#facc15', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H8c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-1c-.55 0-1-.45-1-1v-2.34"/><path d="M18 4H6v7a6 6 0 0 0 12 0V4z" fill="#fef08a"/></svg>' }
-];
-
-let selectedAvatar = localStorage.getItem('shabd_anuvad_avatar') || 'cyber_ninja';
-let voiceCallerEnabled = true;
-
-function getAvatarData(avatarId) {
-  return COOL_AVATARS.find(a => a.id === avatarId) || COOL_AVATARS[0];
-}
-
-function renderAvatarHtml(avatarId, customClass = '', customStyle = '') {
-  const av = getAvatarData(avatarId);
-  return `
-    <div class="player-avatar ${customClass}" style="background: ${av.bg}; border-color: ${av.border}; ${customStyle}" title="${av.name}">
-      ${av.svg}
-    </div>
-  `;
-}
-
-function initAvatarPicker() {
-  const grid = document.getElementById('avatar-options-grid');
-  const display = document.getElementById('current-avatar-display');
-  const nameDisplay = document.getElementById('current-avatar-name');
-  if (!grid) return;
-
-  grid.innerHTML = '';
-  COOL_AVATARS.forEach(av => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `avatar-option-btn ${av.id === selectedAvatar ? 'selected' : ''}`;
-    btn.title = av.name;
-    btn.style.background = av.bg;
-    btn.style.borderColor = av.border;
-    btn.innerHTML = av.svg;
-    btn.addEventListener('click', () => {
-      selectedAvatar = av.id;
-      localStorage.setItem('shabd_anuvad_avatar', av.id);
-      if (display) {
-        display.style.background = av.bg;
-        display.style.borderColor = av.border;
-        display.innerHTML = av.svg;
-      }
-      if (nameDisplay) nameDisplay.textContent = av.name;
-      document.querySelectorAll('.avatar-option-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-    });
-    grid.appendChild(btn);
-  });
-
-  const activeAv = getAvatarData(selectedAvatar);
-  if (display) {
-    display.style.background = activeAv.bg;
-    display.style.borderColor = activeAv.border;
-    display.innerHTML = activeAv.svg;
-  }
-  if (nameDisplay) nameDisplay.textContent = activeAv.name;
+function renderAvatarHtml() {
+  return '';
 }
 
 // Helper to get formatted 75-Ball label (e.g. B-7, I-22, N-38, G-54, O-69)
@@ -658,7 +587,7 @@ btnCreateRoom.addEventListener('click', () => {
   // Store username in local storage for convenience
   localStorage.setItem('shabd_anuvad_username', username);
   currentUsername = username;
-  socket.emit('create_room', { username: username, gameType: selectedGameType, avatar: selectedAvatar });
+  socket.emit('create_room', { username: username, gameType: selectedGameType });
 });
 
 btnJoinRoom.addEventListener('click', () => {
@@ -676,7 +605,7 @@ btnJoinRoom.addEventListener('click', () => {
   localStorage.setItem('shabd_anuvad_username', username);
   currentUsername = username;
   currentRoomCode = roomCode.toUpperCase();
-  socket.emit('join_room', { code: currentRoomCode, username: username, avatar: selectedAvatar });
+  socket.emit('join_room', { code: currentRoomCode, username: username });
 });
 
 // Lobby Screen
@@ -1224,6 +1153,10 @@ socket.on('round_started', (data) => {
   const gameClassicPrompt = document.getElementById('game-classic-prompt');
   const bombBody = document.getElementById('playground-bomb');
   
+  // Close any active round modal
+  const translateRoundModal = document.getElementById('translate-round-modal');
+  if (translateRoundModal) translateRoundModal.style.display = 'none';
+
   // Reset input fields
   guessInput.value = '';
   guessInput.className = '';
@@ -1414,6 +1347,73 @@ socket.on('round_ended', (data) => {
   
   guessFeedback.textContent = `Correct Answer: ${data.correctAnswer}`;
   guessFeedback.className = 'guess-feedback correct';
+
+  // Pop-Up Round Result Modal (Front and center, not just at bottom)
+  const translateRoundModal = document.getElementById('translate-round-modal');
+  const title = document.getElementById('translate-round-modal-title');
+  const hindiWordEl = document.getElementById('translate-modal-hindi');
+  const englishWordEl = document.getElementById('translate-modal-english');
+  const scorersTitle = document.getElementById('translate-scorers-title');
+  const scorersList = document.getElementById('translate-scorers-list');
+  const standingsTbody = document.getElementById('translate-standings-tbody');
+  const countdownBar = document.getElementById('translate-countdown-bar');
+
+  if (translateRoundModal && title && hindiWordEl && englishWordEl) {
+    title.textContent = `Round ${data.round || 1} Finished!`;
+    hindiWordEl.textContent = data.hindiWord || promptHindiWord.textContent;
+    englishWordEl.textContent = data.correctAnswer;
+
+    // Render Scorers / Winner list
+    if (scorersList) {
+      scorersList.innerHTML = '';
+      const scorers = data.roundScorers || [];
+      if (scorers.length > 0) {
+        if (scorersTitle) scorersTitle.textContent = '🏆 Fastest Guesser(s)';
+        scorers.forEach(s => {
+          const item = document.createElement('div');
+          item.className = 'round-winner-item';
+          item.innerHTML = `
+            <div class="winner-user-col">
+              ${renderAvatarHtml(s.avatar, '', 'width:28px; height:28px;')}
+              <span>${s.username}</span>
+            </div>
+            <span class="winner-badge">⚡ Correct! (+${s.roundScore || 10} pts)</span>
+          `;
+          scorersList.appendChild(item);
+        });
+      } else {
+        if (scorersTitle) scorersTitle.textContent = '⏱️ Round Summary';
+        scorersList.innerHTML = `<div style="color:var(--text-muted); font-size:0.9rem; padding: 4px 0;">No one guessed in time! ⌛</div>`;
+      }
+    }
+
+    // Render Scoreboard Standings
+    if (standingsTbody) {
+      standingsTbody.innerHTML = '';
+      const standings = data.standings || [];
+      standings.forEach((p, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="rank-badge" style="font-size:0.75rem; width:20px; height:20px;">${idx + 1}</span></td>
+          <td class="standings-user-col">${renderAvatarHtml(p.avatar, '', 'width:24px; height:24px;')} <span>${p.username}</span></td>
+          <td><strong style="color:var(--primary);">${p.score} pts</strong></td>
+        `;
+        standingsTbody.appendChild(tr);
+      });
+    }
+
+    // Animate countdown bar
+    if (countdownBar) {
+      countdownBar.style.transition = 'none';
+      countdownBar.style.width = '100%';
+      setTimeout(() => {
+        countdownBar.style.transition = 'width 4.2s linear';
+        countdownBar.style.width = '0%';
+      }, 50);
+    }
+
+    translateRoundModal.style.display = 'flex';
+  }
 });
 
 // Bingo Card Assigned event (Receive authentic 75-Ball card from server)
@@ -1426,9 +1426,11 @@ socket.on('bingo_card_assigned', ({ board }) => {
 socket.on('game_over', (data) => {
   showScreen('gameover');
   
-  // Close any active bingo round modal
+  // Close any active round modals
   const roundModal = document.getElementById('bingo-round-modal');
   if (roundModal) roundModal.style.display = 'none';
+  const translateRoundModal = document.getElementById('translate-round-modal');
+  if (translateRoundModal) translateRoundModal.style.display = 'none';
 
   // Show host actions vs guest message
   const hostActions = document.getElementById('host-gameover-actions');
@@ -1450,14 +1452,14 @@ socket.on('game_over', (data) => {
   if (selectedGameType === 'bingo') {
     if (data.finalScores && data.finalScores.length > 0) {
       const winner = data.finalScores[0];
-      announcementHtml += `🏆 ${winner.avatar || '🐱'} ${winner.username} won the match!`;
+      announcementHtml += `🏆 ${winner.username} won the match!`;
     } else {
       announcementHtml += "No players in the game.";
     }
   } else {
     if (data.finalScores && data.finalScores.length > 0) {
       const winner = data.finalScores[0];
-      announcementHtml += `🏆 ${winner.avatar || '🐱'} ${winner.username} wins the match with ${winner.score} correct answers!`;
+      announcementHtml += `🏆 ${winner.username} wins the match with ${winner.score} correct answers!`;
     } else {
       announcementHtml += "No players in the game.";
     }
@@ -1570,7 +1572,6 @@ function updatePlayersRing(players, currentTurnPlayerId, gameMode) {
     node.innerHTML = `
       <div class="ring-player-avatar-wrapper">
         <div class="ring-player-hearts">${heartsHtml}</div>
-        ${renderAvatarHtml(p.avatar, 'ring-player-avatar', 'width:44px; height:44px;')}
       </div>
       <span class="ring-player-name" style="font-weight: ${isMe ? 'bold' : 'normal'}; border-color: ${isMe ? 'var(--primary)' : 'rgba(255,255,255,0.05)'}">
         ${p.username} ${isMe ? '(You)' : ''}
