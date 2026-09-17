@@ -418,99 +418,23 @@ function handleGuessSubmit() {
   setTimeout(() => guessInput.focus(), 10);
 }
 
-// Set Guess Input State helper for mobile/iPad/Android soft keyboard preservation
-function setGuessInputEnabled(enabled, placeholder = "", isCorrect = false, forceDisable = false) {
-  if (forceDisable) {
-    guessInput.disabled = true;
-    guessInput.readOnly = false;
-    blockInput = false;
-    guessInput.placeholder = placeholder || "Waiting...";
-    guessInput.classList.remove('input-correct');
-    guessInput.classList.remove('input-not-my-turn');
-    btnSubmitGuess.disabled = true;
+// Set Guess Input State helper
+function setGuessInputEnabled(enabled, placeholder = "", isCorrect = false) {
+  guessInput.disabled = !enabled;
+  guessInput.readOnly = false;
+  guessInput.placeholder = placeholder || (enabled ? "Type your English translation..." : "Waiting...");
+  btnSubmitGuess.disabled = !enabled;
+  
+  if (isCorrect) {
+    guessInput.classList.add('input-correct');
   } else {
-    guessInput.disabled = false;
-    guessInput.readOnly = false;
-    blockInput = !enabled;
-    guessInput.placeholder = placeholder || "Type your English translation...";
-    
-    if (blockInput) {
-      guessInput.classList.add('input-not-my-turn');
-      btnSubmitGuess.disabled = true;
-    } else {
-      guessInput.classList.remove('input-not-my-turn');
-      btnSubmitGuess.disabled = false;
-    }
-    
-    if (isCorrect) {
-      guessInput.classList.add('input-correct');
-    } else {
-      guessInput.classList.remove('input-correct');
-    }
+    guessInput.classList.remove('input-correct');
   }
-}
-
-// Block typing when input is in soft-disabled state (keeps mobile keyboard open)
-guessInput.addEventListener('keydown', (e) => {
-  if (blockInput) {
-    e.preventDefault();
+  
+  if (enabled) {
+    guessInput.classList.remove('input-not-my-turn');
+    setTimeout(() => guessInput.focus(), 30);
   }
-});
-
-guessInput.addEventListener('input', (e) => {
-  if (blockInput) {
-    guessInput.value = '';
-  }
-});
-
-// Full-screen overlay to unlock soft keyboard on mobile devices for guest players
-function showMobileStartOverlay() {
-  if (document.getElementById('mobile-start-overlay')) return;
-  
-  const overlay = document.createElement('div');
-  overlay.id = 'mobile-start-overlay';
-  overlay.style.position = 'fixed';
-  overlay.style.top = '0';
-  overlay.style.left = '0';
-  overlay.style.width = '100vw';
-  overlay.style.height = '100vh';
-  overlay.style.background = 'rgba(10, 10, 15, 0.95)';
-  overlay.style.display = 'flex';
-  overlay.style.flexDirection = 'column';
-  overlay.style.alignItems = 'center';
-  overlay.style.justifyContent = 'center';
-  overlay.style.zIndex = '99999';
-  overlay.style.backdropFilter = 'blur(15px)';
-  overlay.style.padding = '30px';
-  overlay.style.textAlign = 'center';
-  
-  overlay.innerHTML = `
-    <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; color: #fff; margin-bottom: 15px; text-shadow: 0 0 10px rgba(255,255,255,0.3);">
-      Match is Starting! 🚀
-    </h2>
-    <p style="font-family: var(--font-main); font-size: 1.1rem; color: rgba(255,255,255,0.7); margin-bottom: 30px; max-width: 320px;">
-      Tap the button below to join the arena and unlock your keyboard.
-    </p>
-    <button id="btn-mobile-unlock" class="btn btn-primary btn-glow" style="padding: 16px 32px; font-size: 1.2rem; border-radius: 12px; width: 100%; max-width: 280px; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);">
-      ENTER ARENA ⚔️
-    </button>
-  `;
-  
-  document.body.appendChild(overlay);
-  
-  const unlockBtn = document.getElementById('btn-mobile-unlock');
-  const triggerUnlock = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    document.body.removeChild(overlay);
-    
-    setTimeout(() => {
-      guessInput.focus();
-    }, 20);
-  };
-  
-  unlockBtn.addEventListener('click', triggerUnlock);
-  unlockBtn.addEventListener('touchend', triggerUnlock);
 }
 
 // Send Chat Message
@@ -1195,35 +1119,29 @@ socket.on('game_started', () => {
   showScreen('game');
   guessFeedback.textContent = '';
   guessFeedback.className = 'guess-feedback';
-  
-  // Mobile soft-keyboard auto-unlock overlay for guest players
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if (isMobile && !isHost) {
-    showMobileStartOverlay();
-  }
+  guessInput.disabled = false;
+  guessInput.readOnly = false;
+  setTimeout(() => guessInput.focus(), 30);
 });
 
 // 4. Start of a new game round
 socket.on('round_started', (data) => {
   hasGuessedThisRound = false;
   currentRoundTime = data.roundTime || 40; // store selected duration
-  
-  const playCard = document.querySelector('.play-card');
-  const bombPlayground = document.getElementById('bomb-playground');
-  const gameClassicPrompt = document.getElementById('game-classic-prompt');
-  const bombBody = document.getElementById('playground-bomb');
-  
-  // Close any active round modal
-  const translateRoundModal = document.getElementById('translate-round-modal');
-  if (translateRoundModal) translateRoundModal.style.display = 'none';
 
-  // Reset input fields
+  // Reset input fields completely for all players
   guessInput.value = '';
   guessInput.className = '';
+  guessInput.disabled = false;
+  guessInput.readOnly = false;
+  guessInput.placeholder = "Type your English translation...";
+  btnSubmitGuess.disabled = false;
+
   guessFeedback.textContent = '';
   guessFeedback.className = 'guess-feedback';
   
   wordHintLetters.textContent = data.hintState;
+  promptHindiWord.textContent = data.hindiWord;
   
   hintAlertBox.textContent = "Round started! Translate the Hindi word to English.";
   hintAlertBox.style.color = "var(--text-muted)";
@@ -1232,66 +1150,9 @@ socket.on('round_started', (data) => {
   gameTimerBar.style.width = '100%';
   gameTimerText.textContent = `${data.timeLeft}s`;
 
-  // Apply Survival Mode turn lock and visual bomb layout on round start
-  const turnBanner = document.getElementById('game-turn-banner');
-  if (data.gameMode === 'survival') {
-    if (bombPlayground) bombPlayground.style.display = 'block';
-    if (gameClassicPrompt) gameClassicPrompt.style.display = 'none';
-    playCard.classList.add('mode-survival');
-    
-    if (bombBody) {
-      bombBody.classList.remove('bomb-ticking', 'bomb-explode');
-    }
-    
-    const promptHindiWordSurvival = document.getElementById('prompt-hindi-word-survival');
-    if (promptHindiWordSurvival) {
-      promptHindiWordSurvival.textContent = data.hindiWord;
-    }
-    
-    // Position players around the bomb
-    updatePlayersRing(lastPlayersList, data.currentTurnPlayerId, data.gameMode);
-    
-    turnBanner.style.display = 'block';
-    const isMyTurn = (socket.id === data.currentTurnPlayerId);
-    
-    if (isMyTurn) {
-      turnBanner.classList.add('my-turn');
-      turnBanner.innerHTML = `👉 IT IS YOUR TURN! Translate the word.`;
-      
-      setGuessInputEnabled(true, "Type your English translation...");
-      btnSubmitGuess.disabled = false;
-      
-      // Focus guess input box immediately only if it is my turn
-      setTimeout(() => {
-        guessInput.focus();
-      }, 50);
-    } else {
-      turnBanner.classList.remove('my-turn');
-      turnBanner.innerHTML = `Waiting for active player's turn...`;
-      
-      setGuessInputEnabled(false, `Waiting for player's turn...`);
-      btnSubmitGuess.disabled = true;
-    }
-  } else {
-    // Classic Mode: enable and focus for everyone
-    if (bombPlayground) bombPlayground.style.display = 'none';
-    if (gameClassicPrompt) gameClassicPrompt.style.display = 'block';
-    playCard.classList.remove('mode-survival');
-    
-    if (bombBody) {
-      bombBody.classList.remove('bomb-ticking', 'bomb-explode');
-    }
-    
-    promptHindiWord.textContent = data.hindiWord;
-    
-    turnBanner.style.display = 'none';
-    setGuessInputEnabled(true, "Type your English translation...");
-    btnSubmitGuess.disabled = false;
-    
-    setTimeout(() => {
-      guessInput.focus();
-    }, 50);
-  }
+  setTimeout(() => {
+    guessInput.focus();
+  }, 40);
 });
 
 // 5. Timer Tick Update
