@@ -1221,16 +1221,13 @@ io.on('connection', (socket) => {
     });
   });
 
-  // 7. Disconnection
-  socket.on('disconnect', () => {
-    console.log(`Player disconnected: ${socket.id}`);
-    
-    // Find room the socket was in
+  function handlePlayerLeave(socket) {
     for (const roomCode in rooms) {
       const room = rooms[roomCode];
       if (room.players[socket.id]) {
         const username = room.players[socket.id].username;
         delete room.players[socket.id];
+        socket.leave(roomCode);
 
         // Notify other players
         io.to(roomCode).emit('chat_message', {
@@ -1296,7 +1293,7 @@ io.on('connection', (socket) => {
                 const finalScores = [{ username: lastPlayer.username, score: lastPlayer.completedLines }];
                 io.to(roomCode).emit('game_over', {
                   finalScores,
-                  message: `All other players disconnected. ${lastPlayer.username} wins by default! 🏆`
+                  message: `All other players left. ${lastPlayer.username} wins by default! 🏆`
                 });
                 if (room.timer) {
                   clearInterval(room.timer);
@@ -1336,6 +1333,17 @@ io.on('connection', (socket) => {
         break; // socket can only be in one room
       }
     }
+  }
+
+  // Explicit leave room event
+  socket.on('leave_room', () => {
+    handlePlayerLeave(socket);
+  });
+
+  // 7. Disconnection
+  socket.on('disconnect', () => {
+    console.log(`Player disconnected: ${socket.id}`);
+    handlePlayerLeave(socket);
   });
 });
 

@@ -354,18 +354,37 @@ body {
   box-shadow: 0 1px 0px rgba(0, 0, 0, 0.35);
 }
 
-.actions-row {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-}
-
-.actions-row.centered {
+.btn-danger-outline {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  font-size: 0.9rem;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  gap: 8px;
 }
 
-.actions-row button {
-  flex: 1;
+.btn-danger-outline:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: #ef4444;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+}
+
+.screen-footer-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  width: 100%;
 }
 
 /* Join Form Slide Down Anim */

@@ -715,17 +715,25 @@ if (btnReturnLobby) {
   });
 }
 
-// Game Over Screen
-btnBackHome.addEventListener('click', () => {
+// --- Exit / Leave Room Handler ---
+function exitCurrentRoom() {
+  if (currentRoomCode) {
+    socket.emit('leave_room', { code: currentRoomCode });
+  }
+
   currentRoomCode = null;
   isHost = false;
   hasGuessedThisRound = false;
-  lobbyChatBox.innerHTML = '';
-  gameChatBox.innerHTML = '';
-  guessInput.value = '';
-  guessInput.className = '';
-  guessFeedback.className = 'guess-feedback';
-  guessFeedback.textContent = '';
+  if (lobbyChatBox) lobbyChatBox.innerHTML = '';
+  if (gameChatBox) gameChatBox.innerHTML = '';
+  if (guessInput) {
+    guessInput.value = '';
+    guessInput.className = '';
+  }
+  if (guessFeedback) {
+    guessFeedback.className = 'guess-feedback';
+    guessFeedback.textContent = '';
+  }
   
   // Clear Bingo states
   bingoSetupBoard = Array(25).fill(null);
@@ -739,13 +747,30 @@ btnBackHome.addEventListener('click', () => {
   
   const roundModal = document.getElementById('bingo-round-modal');
   if (roundModal) roundModal.style.display = 'none';
+  const translateModal = document.getElementById('translate-round-modal');
+  if (translateModal) translateModal.style.display = 'none';
 
   showScreen('welcome');
   
   if (window.location.pathname !== '/') {
     window.history.pushState(null, '', '/');
   }
-});
+}
+
+// Bind all Leave/Exit buttons in footers and game-over screens
+if (btnBackHome) btnBackHome.addEventListener('click', exitCurrentRoom);
+
+const btnLeaveLobby = document.getElementById('btn-leave-lobby');
+if (btnLeaveLobby) btnLeaveLobby.addEventListener('click', exitCurrentRoom);
+
+const btnLeaveGame = document.getElementById('btn-leave-game');
+if (btnLeaveGame) btnLeaveGame.addEventListener('click', exitCurrentRoom);
+
+const btnLeaveBingoSetup = document.getElementById('btn-leave-bingo-setup');
+if (btnLeaveBingoSetup) btnLeaveBingoSetup.addEventListener('click', exitCurrentRoom);
+
+const btnLeaveBingoGame = document.getElementById('btn-leave-bingo-game');
+if (btnLeaveBingoGame) btnLeaveBingoGame.addEventListener('click', exitCurrentRoom);
 
 // Alert Modal Close
 btnCloseAlert.addEventListener('click', closeAlert);
