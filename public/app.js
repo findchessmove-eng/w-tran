@@ -54,6 +54,9 @@ function playDabSound() {
 // Game Type selection handler (called from Welcome Screen)
 window.selectGameType = function(type) {
   selectedGameType = type;
+  try {
+    localStorage.setItem('golu_game_type', type);
+  } catch (e) {}
   
   const translateCard = document.getElementById('select-game-translate');
   const bingo25Card = document.getElementById('select-game-bingo25');
@@ -404,10 +407,15 @@ function appendChatMessage(container, sender, message, isSystem = false) {
 // Submit Guess
 function handleGuessSubmit() {
   const guess = guessInput.value.trim();
-  if (guess === '' || hasGuessedThisRound) return;
+  if (guess === '' || hasGuessedThisRound) {
+    guessInput.focus();
+    return;
+  }
   
   socket.emit('submit_guess', { code: currentRoomCode, guess: guess });
   guessInput.value = '';
+  // Ensure keyboard stays open on iPad / mobile
+  setTimeout(() => guessInput.focus(), 10);
 }
 
 // Set Guess Input State helper for mobile/iPad/Android soft keyboard preservation
@@ -611,6 +619,27 @@ btnJoinRoom.addEventListener('click', () => {
 // Lobby Screen
 lobbyRoomCodeBadge.addEventListener('click', copyRoomCode);
 
+// Auto-restore username and game mode preference from localStorage
+try {
+  const savedUser = localStorage.getItem('shabd_anuvad_username') || localStorage.getItem('golu_player_username');
+  if (savedUser && inputUsername) {
+    inputUsername.value = savedUser;
+  }
+  const savedGame = localStorage.getItem('golu_game_type');
+  if (savedGame) {
+    selectGameType(savedGame);
+  }
+} catch (e) {}
+
+if (inputUsername) {
+  inputUsername.addEventListener('input', (e) => {
+    try {
+      localStorage.setItem('shabd_anuvad_username', e.target.value.trim());
+      localStorage.setItem('golu_player_username', e.target.value.trim());
+    } catch (err) {}
+  });
+}
+
 btnStartGame.addEventListener('click', () => {
   if (!isHost) return;
 
@@ -627,20 +656,17 @@ btnStartGame.addEventListener('click', () => {
   }
 
   const rounds = selectRounds.value;
-  const gameMode = document.getElementById('mode-select').value;
-  const roundTime = document.getElementById('timer-select').value;
+  const timerSelect = document.getElementById('timer-select');
+  const roundTime = timerSelect ? timerSelect.value : 40;
   socket.emit('start_game', { 
     code: currentRoomCode, 
     totalRounds: rounds,
-    gameMode: gameMode,
+    gameMode: 'classic',
     roundTime: roundTime
   });
   
-  // Pre-focus guess input immediately on mobile
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if (isMobile) {
-    guessInput.focus();
-  }
+  // Pre-focus guess input immediately on iPad/mobile
+  setTimeout(() => guessInput.focus(), 30);
 });
 
 btnLobbySendChat.addEventListener('click', () => handleChatSend(lobbyChatInput));
@@ -648,10 +674,19 @@ lobbyChatInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') handleChatSend(lobbyChatInput);
 });
 
-// Game Screen
-btnSubmitGuess.addEventListener('click', handleGuessSubmit);
+// Game Screen: Prevent blur on button tap so iPad keyboard stays open
+btnSubmitGuess.addEventListener('mousedown', (e) => e.preventDefault());
+btnSubmitGuess.addEventListener('touchstart', (e) => e.preventDefault());
+btnSubmitGuess.addEventListener('click', (e) => {
+  e.preventDefault();
+  handleGuessSubmit();
+});
+
 guessInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') handleGuessSubmit();
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    handleGuessSubmit();
+  }
 });
 
 btnVoteShowAnswer.addEventListener('click', () => {
@@ -1367,84 +1402,13 @@ socket.on('round_ended', (data) => {
   hintAlertBox.textContent = `${endReasonText} Next round starting soon...`;
   hintAlertBox.style.color = "var(--warning)";
   
-  // Display the full correct word
+  // Display the full correct word directly on screen (NO blocking pop-up)
   wordHintLetters.textContent = data.correctAnswer;
-  
   guessFeedback.textContent = `Correct Answer: ${data.correctAnswer}`;
   guessFeedback.className = 'guess-feedback correct';
 
-  // Pop-Up Round Result Modal (Front and center, not just at bottom)
-  const translateRoundModal = document.getElementById('translate-round-modal');
-  const title = document.getElementById('translate-round-modal-title');
-  const hindiWordEl = document.getElementById('translate-modal-hindi');
-  const englishWordEl = document.getElementById('translate-modal-english');
-  const scorersTitle = document.getElementById('translate-scorers-title');
-  const scorersList = document.getElementById('translate-scorers-list');
-  const standingsTbody = document.getElementById('translate-standings-tbody');
-  const countdownBar = document.getElementById('translate-countdown-bar');
-
-  if (translateRoundModal && title && hindiWordEl && englishWordEl) {
-    // Set prominent round winner announcement in modal
-    const scorers = data.roundScorers || [];
-    if (scorers.length > 0) {
-      const scorerNames = scorers.map(s => s.username).join(', ');
-      title.innerHTML = `🏆 <strong>${scorerNames}</strong> Won Round ${data.round || 1}!`;
-    } else {
-      title.textContent = `Round ${data.round || 1} Finished!`;
-    }
-
-    hindiWordEl.textContent = data.hindiWord || promptHindiWord.textContent;
-    englishWordEl.textContent = data.correctAnswer;
-
-    // Render Scorers / Winner list
-    if (scorersList) {
-      scorersList.innerHTML = '';
-      if (scorers.length > 0) {
-        if (scorersTitle) scorersTitle.textContent = '🏆 Fastest Guesser(s)';
-        scorers.forEach(s => {
-          const item = document.createElement('div');
-          item.className = 'round-winner-item';
-          item.innerHTML = `
-            <div class="winner-user-col">
-              <span style="font-weight: 800; font-size: 1.05rem;">${s.username}</span>
-            </div>
-            <span class="winner-badge">⚡ Correct! (+${s.roundScore || 10} pts)</span>
-          `;
-          scorersList.appendChild(item);
-        });
-      } else {
-        if (scorersTitle) scorersTitle.textContent = '⏱️ Round Summary';
-        scorersList.innerHTML = `<div style="color:var(--text-muted); font-size:0.9rem; padding: 4px 0;">No one guessed in time! ⌛</div>`;
-      }
-    }
-
-    // Render Scoreboard Standings
-    if (standingsTbody) {
-      standingsTbody.innerHTML = '';
-      const standings = data.standings || [];
-      standings.forEach((p, idx) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><span class="rank-badge" style="font-size:0.75rem; width:20px; height:20px;">${idx + 1}</span></td>
-          <td class="standings-user-col"><span style="font-weight: 700;">${p.username}</span></td>
-          <td><strong style="color:var(--primary); font-size: 1.05rem;">${p.score} pts</strong></td>
-        `;
-        standingsTbody.appendChild(tr);
-      });
-    }
-
-    // Animate countdown bar
-    if (countdownBar) {
-      countdownBar.style.transition = 'none';
-      countdownBar.style.width = '100%';
-      setTimeout(() => {
-        countdownBar.style.transition = 'width 4.2s linear';
-        countdownBar.style.width = '0%';
-      }, 50);
-    }
-
-    translateRoundModal.style.display = 'flex';
-  }
+  // Keep guess input focused for next round
+  setTimeout(() => guessInput.focus(), 50);
 });
 
 // Bingo Card Assigned event (Receive authentic 75-Ball card from server)
