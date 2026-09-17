@@ -414,13 +414,13 @@ function handleGuessSubmit() {
   
   socket.emit('submit_guess', { code: currentRoomCode, guess: guess });
   guessInput.value = '';
-  // Ensure keyboard stays open on iPad / mobile
-  setTimeout(() => guessInput.focus(), 10);
+  // Maintain active focus on iPad / mobile
+  guessInput.focus();
 }
 
-// Set Guess Input State helper
+// Set Guess Input State helper - Never disables DOM input to keep mobile keyboard open
 function setGuessInputEnabled(enabled, placeholder = "", isCorrect = false) {
-  guessInput.disabled = !enabled;
+  guessInput.disabled = false;
   guessInput.readOnly = false;
   guessInput.placeholder = placeholder || (enabled ? "Type your English translation..." : "Waiting...");
   btnSubmitGuess.disabled = !enabled;
@@ -433,8 +433,8 @@ function setGuessInputEnabled(enabled, placeholder = "", isCorrect = false) {
   
   if (enabled) {
     guessInput.classList.remove('input-not-my-turn');
-    setTimeout(() => guessInput.focus(), 30);
   }
+  guessInput.focus();
 }
 
 // Send Chat Message
@@ -598,18 +598,33 @@ lobbyChatInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') handleChatSend(lobbyChatInput);
 });
 
-// Game Screen: Prevent blur on button tap so iPad keyboard stays open
-btnSubmitGuess.addEventListener('mousedown', (e) => e.preventDefault());
-btnSubmitGuess.addEventListener('touchstart', (e) => e.preventDefault());
+// Game Screen: Prevent blur on button tap/touch so iPad keyboard stays open
+btnSubmitGuess.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  handleGuessSubmit();
+  guessInput.focus();
+}, { passive: false });
+
+btnSubmitGuess.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  handleGuessSubmit();
+  guessInput.focus();
+});
+
 btnSubmitGuess.addEventListener('click', (e) => {
   e.preventDefault();
   handleGuessSubmit();
+  guessInput.focus();
 });
 
-guessInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
+// Keydown handler: Prevent default Enter behavior to stop iOS Safari from closing virtual keyboard
+guessInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.keyCode === 13) {
     e.preventDefault();
+    e.stopPropagation();
     handleGuessSubmit();
+    guessInput.focus();
   }
 });
 
@@ -627,9 +642,7 @@ function handleScreenGameTap(e) {
   if (
     e.target.tagName !== 'BUTTON' && 
     e.target.tagName !== 'INPUT' && 
-    e.target.tagName !== 'SELECT' && 
-    !blockInput &&
-    !guessInput.disabled
+    e.target.tagName !== 'SELECT'
   ) {
     guessInput.focus();
   }
@@ -1268,8 +1281,8 @@ socket.on('round_ended', (data) => {
   guessFeedback.textContent = `Correct Answer: ${data.correctAnswer}`;
   guessFeedback.className = 'guess-feedback correct';
 
-  // Keep guess input focused for next round
-  setTimeout(() => guessInput.focus(), 50);
+  // Keep guess input focused for next round so keyboard stays up
+  guessInput.focus();
 });
 
 // Bingo Card Assigned event (Receive authentic 75-Ball card from server)

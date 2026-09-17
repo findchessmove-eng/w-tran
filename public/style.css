@@ -34,8 +34,13 @@
   padding: 0;
 }
 
-html, body {
-  overscroll-behavior: none;
+html {
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  height: 100%;
 }
 
 body {
@@ -43,10 +48,12 @@ body {
   background: var(--bg-gradient);
   background-color: var(--bg-dark);
   color: var(--text-main);
-  min-height: 100vh;
+  min-height: 100%;
   overflow-x: hidden;
   position: relative;
   touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   display: flex;
   justify-content: center;
 }
